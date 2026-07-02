@@ -1,0 +1,4300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>知味 · 你的饮食小助手</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --primary:#8B6914;
+      --primary-light:#C9A84C;
+      --secondary:#7CB342;
+      --accent:#E57373;
+      --bg:#FAF8F5;
+      --bg-card:#FFFFFF;
+      --bg-cream:#F5F0E8;
+      --text:#3D3D3D;
+      --text-light:#8B8B8B;
+      --text-mute:#B5B5B5;
+      --border:rgba(139,105,20,0.08);
+      --shadow:0 4px 20px rgba(139,105,20,0.06);
+      --shadow-lg:0 10px 40px rgba(139,105,20,0.12);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;}
+    body{
+      font-family:'Noto Sans SC','PingFang SC',sans-serif;
+      background:linear-gradient(135deg,#f8f3e9 0%,#f0e8d8 100%);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      padding:20px;
+      overflow-x:hidden;
+    }
+
+    /* —— 桌面侧栏 —— */
+    .stage{
+      display:flex;
+      align-items:center;
+      gap:48px;
+      flex-wrap:wrap;
+      justify-content:center;
+      max-width:1200px;
+    }
+    .brand{
+      max-width:380px;
+    }
+    .brand h1{
+      font-family:'Noto Serif SC',serif;
+      font-size:64px;
+      line-height:1.1;
+      background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      margin-bottom:16px;
+    }
+    .brand .tagline{
+      font-size:18px;
+      color:var(--text-light);
+      line-height:1.7;
+      margin-bottom:24px;
+    }
+    .brand .features-mini{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .features-mini .item{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-size:14px;
+      color:var(--text);
+    }
+    .features-mini .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:var(--secondary);
+    }
+    .features-mini .dot.gold{background:var(--primary-light);}
+    .features-mini .dot.red{background:var(--accent);}
+
+    /* —— 手机外壳 —— */
+    .phone{
+      width:430px;
+      height:820px;
+      background:#0d0d0d;
+      border-radius:52px;
+      padding:14px;
+      box-shadow:
+        0 0 0 2px #1a1a1a,
+        0 30px 60px rgba(0,0,0,0.3),
+        inset 0 0 0 2px #2a2a2a;
+      position:relative;
+      flex-shrink:0;
+    }
+    .phone::before{
+      content:'';
+      position:absolute;
+      top:16px;left:50%;transform:translateX(-50%);
+      width:130px;height:30px;
+      background:#0d0d0d;
+      border-radius:20px;
+      z-index:20;
+    }
+    .phone::after{
+      content:'';
+      position:absolute;
+      bottom:6px;left:50%;transform:translateX(-50%);
+      width:140px;height:5px;
+      background:#fff;
+      opacity:0.3;
+      border-radius:3px;
+      z-index:20;
+    }
+    .screen{
+      width:100%;height:100%;
+      background:var(--bg);
+      border-radius:36px;
+      overflow:hidden;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* —— 状态栏 —— */
+    .status-bar{
+      height:54px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      padding:0 24px 8px;
+      font-size:14px;
+      font-weight:600;
+      color:var(--text);
+      flex-shrink:0;
+    }
+    .status-bar .right{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .status-bar svg{width:16px;height:16px;}
+
+    /* —— 主体内容区 —— */
+    .pages{
+      flex:1;
+      overflow:hidden;
+      position:relative;
+    }
+    .page{
+      position:absolute;
+      inset:0;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding:8px 20px 20px;
+      opacity:0;
+      transform:translateX(20px);
+      pointer-events:none;
+      transition:opacity .35s ease,transform .35s ease;
+      scrollbar-width:none;
+    }
+    .page::-webkit-scrollbar{display:none;}
+    .page.active{
+      opacity:1;
+      transform:translateX(0);
+      pointer-events:auto;
+      z-index:2;
+    }
+    .page.slide-out{
+      transform:translateX(-20px);
+    }
+
+    /* —— 底部 TabBar —— */
+    .tabbar{
+      height:78px;
+      background:rgba(255,255,255,0.95);
+      backdrop-filter:blur(20px);
+      border-top:1px solid var(--border);
+      display:flex;
+      padding:8px 0 18px;
+      flex-shrink:0;
+    }
+    .tab{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      color:var(--text-mute);
+      font-size:11px;
+      cursor:pointer;
+      transition:color .2s;
+    }
+    .tab svg{width:24px;height:24px;stroke-width:1.8;}
+    .tab.active{color:var(--primary);}
+    .tab.active svg{stroke-width:2.2;}
+
+    /* —— 通用组件 —— */
+    .serif{font-family:'Noto Serif SC',serif;}
+    .card{
+      background:var(--bg-card);
+      border-radius:20px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+    .greeting{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin:6px 0 16px;
+    }
+    .greeting h2{
+      font-family:'Noto Serif SC',serif;
+      font-size:22px;
+      font-weight:600;
+    }
+    .greeting p{font-size:12px;color:var(--text-light);margin-top:2px;}
+    .avatar{
+      width:40px;height:40px;border-radius:50%;
+      background:linear-gradient(135deg,var(--primary-light),var(--accent));
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-weight:600;font-size:14px;
+    }
+
+    .date-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(124,179,66,0.1);
+      color:var(--secondary);
+      font-size:11px;
+      padding:4px 10px;
+      border-radius:20px;
+      font-weight:500;
+    }
+    .date-chip .dot{
+      width:5px;height:5px;border-radius:50%;
+      background:var(--secondary);
+      animation:pulse 2s infinite;
+    }
+    @keyframes pulse{
+      0%,100%{opacity:1;}
+      50%{opacity:0.4;}
+    }
+
+    /* —— 大评估卡 —— */
+    .assess-card{
+      background:linear-gradient(135deg,#8B6914 0%,#C9A84C 100%);
+      border-radius:24px;
+      padding:24px;
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+      margin-bottom:16px;
+    }
+    .assess-card::before{
+      content:'';
+      position:absolute;
+      top:-30px;right:-30px;
+      width:160px;height:160px;
+      background:radial-gradient(circle,rgba(255,255,255,0.15) 0%,transparent 70%);
+      border-radius:50%;
+    }
+    .assess-card::after{
+      content:'知';
+      position:absolute;
+      bottom:-20px;right:20px;
+      font-family:'Noto Serif SC',serif;
+      font-size:120px;
+      font-weight:700;
+      color:rgba(255,255,255,0.06);
+      line-height:1;
+    }
+    .assess-card h3{
+      font-family:'Noto Serif SC',serif;
+      font-size:20px;
+      margin-bottom:8px;
+      position:relative;
+    }
+    .assess-card p{
+      font-size:13px;
+      opacity:0.9;
+      line-height:1.6;
+      margin-bottom:16px;
+      position:relative;
+    }
+    .assess-btn{
+      background:#fff;
+      color:var(--primary);
+      border:none;
+      padding:12px 24px;
+      border-radius:24px;
+      font-weight:600;
+      font-size:14px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      position:relative;
+      transition:transform .2s;
+    }
+    .assess-btn:active{transform:scale(0.96);}
+
+    /* —— 快速入口 —— */
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      margin-bottom:20px;
+    }
+    .quick-item{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+      padding:14px 4px;
+      background:var(--bg-card);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      transition:transform .2s;
+    }
+    .quick-item:active{transform:scale(0.95);}
+    .quick-icon{
+      width:36px;height:36px;
+      border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;
+    }
+    .quick-icon.green{background:rgba(124,179,66,0.15);color:var(--secondary);}
+    .quick-icon.gold{background:rgba(201,168,76,0.18);color:var(--primary);}
+    .quick-icon.red{background:rgba(229,115,115,0.15);color:var(--accent);}
+    .quick-icon.purple{background:rgba(149,128,184,0.18);color:#7E57C2;}
+    .quick-item span{font-size:11px;color:var(--text);}
+
+    /* —— 区块标题 —— */
+    .section-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin:18px 0 12px;
+    }
+    .section-title h3{
+      font-family:'Noto Serif SC',serif;
+      font-size:17px;
+      font-weight:600;
+    }
+    .section-title .more{
+      font-size:12px;
+      color:var(--text-light);
+      display:flex;align-items:center;gap:2px;cursor:pointer;
+    }
+
+    /* —— 推荐食谱卡 —— */
+    .recipe-row{
+      display:flex;
+      gap:12px;
+      overflow-x:auto;
+      padding:4px 0 12px;
+      scrollbar-width:none;
+      margin:0 -20px;
+      padding-left:20px;padding-right:20px;
+    }
+    .recipe-row::-webkit-scrollbar{display:none;}
+    .recipe-card{
+      flex-shrink:0;
+      width:160px;
+      background:var(--bg-card);
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      transition:transform .2s;
+    }
+    .recipe-card:active{transform:scale(0.97);}
+    .recipe-cover{
+      width:100%;height:110px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:50px;
+      position:relative;
+    }
+    .recipe-cover.t1{background:linear-gradient(135deg,#fff5e6,#ffe0b2);}
+    .recipe-cover.t2{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);}
+    .recipe-cover.t3{background:linear-gradient(135deg,#fce4ec,#f8bbd0);}
+    .recipe-cover.t4{background:linear-gradient(135deg,#e3f2fd,#bbdefb);}
+    .recipe-cover.t5{background:linear-gradient(135deg,#f3e5f5,#e1bee7);}
+    .recipe-tag{
+      position:absolute;
+      top:8px;left:8px;
+      background:rgba(255,255,255,0.9);
+      color:var(--primary);
+      font-size:10px;
+      padding:2px 8px;
+      border-radius:10px;
+      font-weight:500;
+    }
+    .recipe-info{padding:10px 12px 12px;}
+    .recipe-name{
+      font-size:13px;
+      font-weight:600;
+      margin-bottom:4px;
+    }
+    .recipe-eff{
+      font-size:11px;
+      color:var(--text-light);
+      display:flex;align-items:center;gap:4px;
+    }
+
+    /* —— 趋势卡 —— */
+    .trend-card{
+      background:linear-gradient(135deg,#fff8e1,#fff3e0);
+      border-radius:20px;
+      padding:18px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      margin-bottom:14px;
+    }
+    .trend-chart{
+      width:80px;height:60px;
+      flex-shrink:0;
+    }
+    .trend-info h4{
+      font-size:14px;
+      margin-bottom:4px;
+      font-weight:600;
+    }
+    .trend-info p{
+      font-size:12px;
+      color:var(--text-light);
+      line-height:1.5;
+    }
+    .trend-info .delta{
+      display:inline-flex;
+      align-items:center;
+      gap:2px;
+      color:var(--secondary);
+      font-size:11px;
+      margin-top:4px;
+      font-weight:600;
+    }
+    .trend-info .delta.down{color:var(--accent);}
+
+    /* —— 评估问题 —— */
+    .q-progress{
+      display:flex;gap:4px;margin-bottom:18px;
+    }
+    .q-progress .bar{
+      flex:1;height:3px;border-radius:2px;
+      background:rgba(139,105,20,0.1);
+    }
+    .q-progress .bar.active{background:var(--primary);}
+    .q-progress .bar.done{background:var(--secondary);}
+
+    .q-card{
+      background:var(--bg-card);
+      border-radius:20px;
+      padding:20px;
+      box-shadow:var(--shadow);
+    }
+    .q-card .q-num{
+      font-size:11px;
+      color:var(--primary);
+      font-weight:600;
+      margin-bottom:8px;
+      letter-spacing:0.1em;
+    }
+    .q-card .q-text{
+      font-family:'Noto Serif SC',serif;
+      font-size:18px;
+      font-weight:600;
+      line-height:1.4;
+      margin-bottom:18px;
+    }
+    .q-options{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .q-option{
+      padding:14px 16px;
+      border:1.5px solid rgba(139,105,20,0.1);
+      border-radius:14px;
+      font-size:14px;
+      cursor:pointer;
+      transition:all .2s;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .q-option:active{transform:scale(0.98);}
+    .q-option .emo{
+      width:32px;height:32px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;
+      background:var(--bg-cream);
+    }
+    .q-option.selected{
+      background:linear-gradient(135deg,rgba(139,105,20,0.06),rgba(201,168,76,0.06));
+      border-color:var(--primary);
+      color:var(--primary);
+      font-weight:500;
+    }
+    .q-option.selected .emo{background:rgba(201,168,76,0.18);}
+
+    .q-next{
+      margin-top:20px;
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:14px;
+      background:linear-gradient(135deg,var(--primary),var(--primary-light));
+      color:#fff;
+      font-size:15px;
+      font-weight:600;
+      cursor:pointer;
+      transition:transform .2s;
+    }
+    .q-next:disabled{
+      opacity:0.4;
+      cursor:not-allowed;
+    }
+    .q-next:active:not(:disabled){transform:scale(0.98);}
+
+    .q-btn-row{
+      display:flex;gap:10px;margin-top:20px;
+    }
+    .q-btn-row .q-next{flex:1;margin-top:0;}
+    .q-prev{
+      flex:0 0 auto;
+      padding:14px 18px;
+      border:1.5px solid var(--border);
+      border-radius:14px;
+      background:var(--bg-card);
+      color:var(--text);
+      font-size:14px;
+      cursor:pointer;
+      transition:all .2s;
+      font-family:inherit;
+    }
+    .q-prev:active{transform:scale(0.97);}
+
+    /* —— 加载动画 —— */
+    .loading-page{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      height:100%;
+      text-align:center;
+      padding:20px;
+    }
+    .loading-icon{
+      width:100px;height:100px;
+      border-radius:50%;
+      background:linear-gradient(135deg,var(--primary),var(--primary-light));
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;
+      font-size:40px;
+      margin-bottom:24px;
+      position:relative;
+      animation:breathe 2s ease-in-out infinite;
+    }
+    @keyframes breathe{
+      0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(139,105,20,0.4);}
+      50%{transform:scale(1.05);box-shadow:0 0 0 20px rgba(139,105,20,0);}
+    }
+    .loading-text{
+      font-family:'Noto Serif SC',serif;
+      font-size:18px;
+      font-weight:600;
+      margin-bottom:8px;
+    }
+    .loading-sub{
+      font-size:12px;
+      color:var(--text-light);
+      margin-bottom:24px;
+    }
+    .loading-dots{
+      display:flex;gap:6px;
+    }
+    .loading-dots span{
+      width:6px;height:6px;border-radius:50%;
+      background:var(--primary);
+      animation:dot 1.4s infinite;
+    }
+    .loading-dots span:nth-child(2){animation-delay:0.2s;}
+    .loading-dots span:nth-child(3){animation-delay:0.4s;}
+    @keyframes dot{
+      0%,80%,100%{opacity:0.3;transform:scale(0.8);}
+      40%{opacity:1;transform:scale(1.2);}
+    }
+
+    /* —— 推荐结果 —— */
+    .result-hero{
+      background:linear-gradient(135deg,#8B6914 0%,#C9A84C 100%);
+      border-radius:24px;
+      padding:22px;
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+      margin-bottom:18px;
+    }
+    .result-hero::before{
+      content:'';
+      position:absolute;
+      top:-40px;right:-40px;
+      width:180px;height:180px;
+      background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);
+      border-radius:50%;
+    }
+    .result-hero .label{
+      font-size:11px;
+      opacity:0.85;
+      letter-spacing:0.1em;
+      margin-bottom:8px;
+    }
+    .result-hero h2{
+      font-family:'Noto Serif SC',serif;
+      font-size:24px;
+      line-height:1.3;
+      margin-bottom:12px;
+    }
+    .result-hero p{
+      font-size:12px;
+      opacity:0.9;
+      line-height:1.6;
+    }
+    .result-tags{
+      display:flex;gap:6px;flex-wrap:wrap;
+      margin-top:14px;
+    }
+    .result-tag{
+      background:rgba(255,255,255,0.2);
+      backdrop-filter:blur(10px);
+      color:#fff;
+      font-size:11px;
+      padding:4px 10px;
+      border-radius:20px;
+    }
+    .result-tag.danger{
+      background:rgba(229,115,115,0.3);
+    }
+
+    .ai-chat{
+      background:var(--bg-card);
+      border-radius:20px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+    .chat-head{
+      display:flex;align-items:center;gap:10px;
+      padding-bottom:12px;
+      border-bottom:1px dashed var(--border);
+      margin-bottom:12px;
+    }
+    .chat-head .ai-avatar{
+      width:32px;height:32px;
+      border-radius:50%;
+      background:linear-gradient(135deg,var(--primary),var(--primary-light));
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;
+      font-family:'Noto Serif SC',serif;
+      font-size:14px;
+    }
+    .chat-head .name{
+      font-size:13px;font-weight:600;
+    }
+    .chat-head .role{
+      font-size:10px;color:var(--text-light);
+    }
+    .chat-msg{
+      font-size:13px;
+      line-height:1.7;
+      color:var(--text);
+    }
+    .chat-msg strong{color:var(--primary);}
+
+    .meal-block{
+      background:var(--bg-card);
+      border-radius:20px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      margin-bottom:12px;
+    }
+    .meal-head{
+      display:flex;align-items:center;gap:10px;
+      margin-bottom:12px;
+    }
+    .meal-icon{
+      width:40px;height:40px;
+      border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:22px;
+    }
+    .meal-icon.breakfast{background:linear-gradient(135deg,#fff3e0,#ffe0b2);}
+    .meal-icon.lunch{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);}
+    .meal-icon.dinner{background:linear-gradient(135deg,#fce4ec,#f8bbd0);}
+    .meal-icon.soup{background:linear-gradient(135deg,#e3f2fd,#bbdefb);}
+    .meal-title{
+      font-family:'Noto Serif SC',serif;
+      font-size:15px;
+      font-weight:600;
+    }
+    .meal-sub{
+      font-size:11px;color:var(--text-light);
+    }
+    .meal-dishes{
+      display:flex;flex-direction:column;gap:8px;
+    }
+    .dish-row{
+      display:flex;align-items:center;gap:12px;
+      padding:8px;
+      border-radius:12px;
+      background:var(--bg);
+    }
+    .dish-emoji{
+      width:42px;height:42px;border-radius:10px;
+      background:#fff;
+      display:flex;align-items:center;justify-content:center;
+      font-size:24px;
+      flex-shrink:0;
+    }
+    .dish-name{
+      font-size:13px;font-weight:500;
+      margin-bottom:2px;
+    }
+    .dish-tag{
+      font-size:10px;color:var(--text-light);
+    }
+    .dish-add{
+      margin-left:auto;
+      width:24px;height:24px;
+      border-radius:50%;
+      background:var(--primary);
+      color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;
+      flex-shrink:0;
+      cursor:pointer;
+    }
+
+    /* —— 食谱库 —— */
+    .search-bar{
+      display:flex;align-items:center;gap:8px;
+      background:var(--bg-card);
+      border-radius:14px;
+      padding:10px 14px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+    .search-bar input{
+      flex:1;
+      border:none;
+      outline:none;
+      background:transparent;
+      font-size:13px;
+      color:var(--text);
+      font-family:inherit;
+    }
+    .search-bar input::placeholder{color:var(--text-mute);}
+
+    .filter-chips{
+      display:flex;gap:8px;
+      overflow-x:auto;
+      padding:4px 0 12px;
+      margin:0 -20px;
+      padding-left:20px;padding-right:20px;
+      scrollbar-width:none;
+    }
+    .filter-chips::-webkit-scrollbar{display:none;}
+    .quick-tag{
+      flex-shrink:0;
+      padding:5px 12px;
+      border-radius:16px;
+      font-size:11px;
+      background:rgba(139,105,20,0.08);
+      color:var(--primary);
+      cursor:pointer;
+      transition:all .2s;
+    }
+    .quick-tag:active{transform:scale(0.95);}
+    .chip{
+      flex-shrink:0;
+      padding:7px 14px;
+      border-radius:20px;
+      font-size:12px;
+      background:var(--bg-card);
+      color:var(--text);
+      cursor:pointer;
+      border:1px solid var(--border);
+      transition:all .2s;
+      white-space:nowrap;
+    }
+    .chip.active{
+      background:var(--primary);
+      color:#fff;
+      border-color:var(--primary);
+    }
+
+    .recipe-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    .recipe-grid .recipe-card{
+      width:100%;
+    }
+    .recipe-grid .recipe-cover{
+      height:100px;
+      font-size:42px;
+    }
+    .recipe-grid .recipe-name{
+      font-size:12px;
+    }
+
+    /* —— 我的页面 —— */
+    .profile-head{
+      background:linear-gradient(135deg,#8B6914 0%,#C9A84C 100%);
+      border-radius:24px;
+      padding:22px;
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+      margin-bottom:18px;
+    }
+    .profile-head::before{
+      content:'';
+      position:absolute;
+      top:-30px;right:-30px;
+      width:140px;height:140px;
+      background:radial-gradient(circle,rgba(255,255,255,0.15) 0%,transparent 70%);
+      border-radius:50%;
+    }
+    .profile-info{
+      display:flex;align-items:center;gap:14px;
+      position:relative;
+    }
+    .profile-avatar{
+      width:56px;height:56px;
+      border-radius:50%;
+      background:rgba(255,255,255,0.2);
+      backdrop-filter:blur(10px);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Noto Serif SC',serif;
+      font-size:24px;
+      font-weight:600;
+      border:2px solid rgba(255,255,255,0.3);
+    }
+    .profile-name{
+      font-family:'Noto Serif SC',serif;
+      font-size:18px;
+      margin-bottom:2px;
+    }
+    .profile-meta{
+      font-size:12px;
+      opacity:0.85;
+      display:flex;gap:6px;align-items:center;
+    }
+    .constitution-tag{
+      display:inline-block;
+      background:rgba(255,255,255,0.25);
+      padding:3px 10px;
+      border-radius:12px;
+      font-size:11px;
+      margin-top:12px;
+    }
+
+    .stats-row{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-bottom:18px;
+    }
+    .stat-card{
+      background:var(--bg-card);
+      border-radius:16px;
+      padding:14px 8px;
+      text-align:center;
+      box-shadow:var(--shadow);
+    }
+    .stat-val{
+      font-family:'Noto Serif SC',serif;
+      font-size:20px;
+      font-weight:600;
+      color:var(--primary);
+      line-height:1.2;
+    }
+    .stat-label{
+      font-size:11px;
+      color:var(--text-light);
+      margin-top:4px;
+    }
+
+    .menu-card{
+      background:var(--bg-card);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+    .menu-item{
+      display:flex;align-items:center;gap:12px;
+      padding:14px 16px;
+      cursor:pointer;
+      border-bottom:1px solid var(--border);
+      transition:background .2s;
+    }
+    .menu-item:last-child{border-bottom:none;}
+    .menu-item:active{background:var(--bg);}
+    .menu-icon{
+      width:36px;height:36px;
+      border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;
+    }
+    .menu-icon.green{background:rgba(124,179,66,0.15);color:var(--secondary);}
+    .menu-icon.gold{background:rgba(201,168,76,0.18);color:var(--primary);}
+    .menu-icon.red{background:rgba(229,115,115,0.15);color:var(--accent);}
+    .menu-icon.purple{background:rgba(149,128,184,0.18);color:#7E57C2;}
+    .menu-icon.blue{background:rgba(100,181,246,0.18);color:#42A5F5;}
+    .menu-text{
+      flex:1;
+    }
+    .menu-title{
+      font-size:14px;
+      font-weight:500;
+      margin-bottom:2px;
+    }
+    .menu-desc{
+      font-size:11px;
+      color:var(--text-light);
+    }
+    .menu-arrow{
+      color:var(--text-mute);
+      font-size:18px;
+    }
+
+    /* 弹层 */
+    .modal{
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,0.4);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      z-index:50;
+    }
+    .modal.show{display:flex;}
+    .modal-content{
+      background:#fff;
+      width:100%;
+      border-radius:24px 24px 0 0;
+      padding:24px 20px 32px;
+      max-height:80%;
+      overflow-y:auto;
+      animation:slideUp .3s ease;
+    }
+    @keyframes slideUp{
+      from{transform:translateY(100%);}
+      to{transform:translateY(0);}
+    }
+    @keyframes spin{
+      from{transform:rotate(0deg);}
+      to{transform:rotate(360deg);}
+    }
+    .modal-handle{
+      width:40px;height:4px;
+      background:rgba(0,0,0,0.1);
+      border-radius:2px;
+      margin:0 auto 16px;
+    }
+
+    /* —— 重新评估按钮 —— */
+    .refresh-btn{
+      display:flex;
+      align-items:center;
+      gap:4px;
+      background:rgba(139,105,20,0.1);
+      color:var(--primary);
+      border:none;
+      padding:7px 12px;
+      border-radius:20px;
+      font-size:12px;
+      font-weight:500;
+      cursor:pointer;
+      font-family:inherit;
+      transition:all .2s;
+    }
+    .refresh-btn:active{transform:scale(0.95);}
+
+    /* —— 顶部快捷栏 —— */
+    .quick-bar{
+      display:flex;
+      gap:8px;
+      margin-bottom:14px;
+    }
+    .quick-bar-item{
+      flex:1;
+      background:var(--bg-card);
+      border-radius:14px;
+      padding:10px 8px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:4px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      transition:transform .2s;
+      position:relative;
+    }
+    .quick-bar-item:active{transform:scale(0.96);}
+    .qb-icon{font-size:20px;}
+    .qb-text{font-size:11px;color:var(--text);}
+    .qb-arrow{
+      position:absolute;
+      top:6px;right:6px;
+      font-size:12px;color:var(--text-mute);
+    }
+
+    /* —— 结果卡顶部 —— */
+    .result-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:8px;
+    }
+    .result-time{
+      font-size:10px;
+      opacity:0.7;
+      background:rgba(255,255,255,0.15);
+      padding:2px 8px;
+      border-radius:10px;
+    }
+
+    /* —— 追问按钮 —— */
+    .ask-btn{
+      margin-left:auto;
+      background:rgba(255,255,255,0.15);
+      color:var(--primary);
+      border:none;
+      padding:4px 12px;
+      border-radius:14px;
+      font-size:11px;
+      font-weight:500;
+      cursor:pointer;
+      font-family:inherit;
+      transition:all .2s;
+    }
+    .ask-btn:active{transform:scale(0.95);}
+
+    /* —— 分段切换 —— */
+    .segment-bar{
+      display:flex;
+      background:var(--bg-cream);
+      border-radius:12px;
+      padding:4px;
+      margin-bottom:14px;
+    }
+    .seg{
+      flex:1;
+      text-align:center;
+      padding:7px 4px;
+      font-size:12px;
+      color:var(--text-light);
+      border-radius:10px;
+      cursor:pointer;
+      transition:all .2s;
+    }
+    .seg.active{
+      background:var(--bg-card);
+      color:var(--primary);
+      font-weight:600;
+      box-shadow:var(--shadow);
+    }
+
+    /* —— 底部操作区 —— */
+    .bottom-actions{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+      margin-top:16px;
+    }
+    .action-btn{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:4px;
+      padding:12px 4px;
+      background:var(--bg-card);
+      border:none;
+      border-radius:14px;
+      font-size:11px;
+      color:var(--text);
+      cursor:pointer;
+      box-shadow:var(--shadow);
+      transition:all .2s;
+      font-family:inherit;
+    }
+    .action-btn:active{transform:scale(0.95);}
+    .action-btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary-light));
+      color:#fff;
+    }
+
+    /* —— 追问快捷问题芯片 —— */
+    .ask-chip{
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 8px;
+      font-size:11px;
+      color:var(--text);
+      cursor:pointer;
+      transition:all .2s;
+      font-family:inherit;
+      text-align:left;
+      line-height:1.4;
+    }
+    .ask-chip:active{
+      background:var(--bg-cream);
+      transform:scale(0.97);
+    }
+
+    /* —— 菜品添加按钮 —— */
+    .dish-add-btn{
+      width:26px;height:26px;
+      border-radius:50%;
+      background:var(--primary);
+      color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      font-size:16px;
+      flex-shrink:0;
+      cursor:pointer;
+      transition:all .2s;
+      border:none;
+      font-family:inherit;
+      line-height:1;
+    }
+    .dish-add-btn:active{transform:scale(0.9);}
+    .dish-add-btn.added{
+      background:var(--secondary);
+      color:#fff;
+    }
+    .dish-add-btn.added::before{content:'✓';font-size:13px;font-weight:700;}
+    .dish-add-btn.added::after{content:none;}
+
+    /* —— 今日食谱卡片 —— */
+    .today-plan-card{
+      background:var(--bg-card);
+      border-radius:18px;
+      padding:14px;
+      margin-bottom:14px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      transition:transform .2s;
+    }
+    .today-plan-card:active{transform:scale(0.98);}
+    .plan-header{
+      display:flex;align-items:center;gap:10px;
+      margin-bottom:12px;
+    }
+    .plan-icon{font-size:24px;}
+    .plan-title{font-size:14px;font-weight:600;color:var(--text);}
+    .plan-status{margin-top:4px;}
+    .plan-tag{
+      font-size:10px;padding:2px 8px;border-radius:10px;
+      background:var(--bg-cream);color:var(--text-light);
+      margin-right:6px;
+    }
+    .plan-tag.selected{
+      background:rgba(76,175,80,0.15);color:var(--secondary);
+    }
+    .plan-arrow{font-size:20px;color:var(--text-mute);}
+    .plan-preview{
+      display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;
+      scrollbar-width:none;
+    }
+    .plan-preview::-webkit-scrollbar{display:none;}
+    .plan-dish{
+      flex-shrink:0;width:70px;
+      background:var(--bg-cream);border-radius:12px;
+      padding:8px 6px;
+      text-align:center;
+    }
+    .plan-dish-emoji{font-size:20px;margin-bottom:4px;}
+    .plan-dish-name{font-size:10px;color:var(--text);}
+    .plan-footer{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-top:10px;padding-top:10px;border-top:1px solid var(--border);
+      font-size:12px;color:var(--primary);
+    }
+
+    /* —— 时间轴样式 —— */
+    .timeline{
+      position:relative;
+    }
+    .timeline::before{
+      content:'';position:absolute;left:22px;top:24px;bottom:0;width:2px;
+      background:var(--border);
+    }
+    .timeline-item{
+      display:flex;gap:12px;margin-bottom:20px;position:relative;
+    }
+    .timeline-time{
+      width:52px;font-size:10px;color:var(--text-light);
+      flex-shrink:0;text-align:right;padding-top:4px;
+    }
+    .timeline-dot{
+      width:12px;height:12px;border-radius:50%;
+      background:var(--primary);border:3px solid var(--bg-card);
+      flex-shrink:0;margin-top:2px;z-index:1;
+    }
+    .timeline-content{
+      flex:1;
+    }
+    .timeline-title{
+      font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;
+    }
+    .timeline-dishes{
+      display:flex;flex-direction:column;gap:6px;
+    }
+    .timeline-dish{
+      display:flex;align-items:center;gap:10px;padding:10px 12px;
+      background:var(--bg);border-radius:12px;transition:all .2s;
+    }
+    .timeline-dish:active{transform:scale(0.98);}
+    .timeline-dish.selected{
+      background:rgba(76,175,80,0.1);border:1px solid var(--secondary);
+    }
+    .td-emoji{font-size:22px;}
+    .td-info{flex:1;}
+    .td-name{font-size:13px;color:var(--text);}
+    .td-tag{font-size:10px;color:var(--text-light);margin-top:2px;}
+    .td-add{
+      width:24px;height:24px;border-radius:50%;
+      background:var(--primary);color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:600;cursor:pointer;
+      transition:all .2s;
+    }
+    .timeline-dish.selected .td-add{
+      background:var(--secondary);
+    }
+    .timeline-dish.selected .td-add::before{content:'✓';font-size:12px;}
+    .timeline-dish.selected .td-add::after{content:none;}
+
+    /* —— 图表样式 —— */
+    .chart-bars{
+      display:flex;gap:6px;height:80px;align-items:flex-end;
+    }
+    .chart-bar{
+      flex:1;border-radius:6px 6px 0 0;position:relative;
+      transition:height .3s;
+    }
+    .chart-value{
+      position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+      font-size:9px;color:var(--text-light);white-space:nowrap;
+    }
+    .chart-labels{
+      display:flex;gap:6px;margin-top:8px;font-size:9px;color:var(--text-mute);
+      text-align:center;
+    }
+
+    @media (max-width: 880px){
+      .brand{display:none;}
+      .phone{width:100%;max-width:430px;height:calc(100vh - 40px);max-height:820px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="brand">
+      <h1>知味</h1>
+      <p class="tagline">基于中医食疗智慧 + AI 个性化推荐的<br>饮食管理小程序 Demo</p>
+      <div class="features-mini">
+        <div class="item"><span class="dot"></span>1 分钟体质评估，生成今日食养方案</div>
+        <div class="item"><span class="dot gold"></span>3000+ 道食疗食谱按体质/节气筛选</div>
+        <div class="item"><span class="dot red"></span>体检报告 AI 解读、医嘱智能解析</div>
+        <div class="item"><span class="dot"></span>数据记录 · 趋势跟踪 · 闭环管理</div>
+      </div>
+    </div>
+
+    <div class="phone">
+      <div class="screen">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="right">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 11h2v3H2zM6 8h2v6H6zM10 5h2v9h-2zM14 2h0v12h-1V2z"/></svg>
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2C4.5 2 1.5 4 0 6c1.5 2 4.5 4 8 4s6.5-2 8-4c-1.5-2-4.5-4-8-4zm0 6.5A2.5 2.5 0 1 1 8 3.5a2.5 2.5 0 0 1 0 5z"/></svg>
+            <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="5" width="12" height="6" rx="1" fill="none" stroke="currentColor"/><rect x="2" y="6" width="9" height="4"/><rect x="14" y="7" width="1.5" height="2"/></svg>
+          </div>
+        </div>
+
+        <!-- 主体 -->
+        <div class="pages">
+          <!-- ===== 首页 ===== -->
+          <div class="page active" data-page="home">
+            <div class="greeting">
+              <div>
+                <h2>你好，小雅</h2>
+                <p>愿你今日饮食，皆合于身体所需</p>
+              </div>
+              <div class="avatar">雅</div>
+            </div>
+
+            <div class="date-chip">
+              <span class="dot"></span>
+              夏至 · 第 4 天 · 湿热盛行
+            </div>
+
+            <!-- 评估卡 -->
+            <div class="assess-card" style="margin-top:14px;">
+              <h3>今日状态如何？</h3>
+              <p>用 1 分钟回答 4 个问题，AI 帮你定制今日食养方案</p>
+              <button class="assess-btn" onclick="startAssessment()">
+                开始今日评估
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8m-3-3l3 3-3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+
+            <!-- 快速入口 -->
+            <div class="quick-grid">
+              <div class="quick-item" onclick="gotoPage('recommend')">
+                <div class="quick-icon green">🍵</div>
+                <span>今日食养</span>
+              </div>
+              <div class="quick-item" onclick="openReport()">
+                <div class="quick-icon gold">📋</div>
+                <span>报告解读</span>
+              </div>
+              <div class="quick-item" onclick="openAdvice()">
+                <div class="quick-icon red">💊</div>
+                <span>医嘱管理</span>
+              </div>
+              <div class="quick-item" onclick="gotoPage('recipe')">
+                <div class="quick-icon purple">📖</div>
+                <span>食谱库</span>
+              </div>
+            </div>
+
+            <!-- 推荐食谱 -->
+            <div class="section-title">
+              <h3>为你推荐</h3>
+              <div class="more" onclick="gotoPage('recipe')">查看更多 →</div>
+            </div>
+            <div class="recipe-row">
+              <div class="recipe-card" onclick="openRecipe('薏米红豆粥')">
+                <div class="recipe-cover t1">
+                  <span class="recipe-tag">祛湿</span>
+                  🍲
+                </div>
+                <div class="recipe-info">
+                  <div class="recipe-name">薏米红豆粥</div>
+                  <div class="recipe-eff">💧 清热利湿</div>
+                </div>
+              </div>
+              <div class="recipe-card" onclick="openRecipe('凉拌苦瓜')">
+                <div class="recipe-cover t2">
+                  <span class="recipe-tag">清热</span>
+                  🥗
+                </div>
+                <div class="recipe-info">
+                  <div class="recipe-name">凉拌苦瓜</div>
+                  <div class="recipe-eff">🔥 泻火解毒</div>
+                </div>
+              </div>
+              <div class="recipe-card" onclick="openRecipe('山药排骨汤')">
+                <div class="recipe-cover t3">
+                  <span class="recipe-tag">补气</span>
+                  🍵
+                </div>
+                <div class="recipe-info">
+                  <div class="recipe-name">山药排骨汤</div>
+                  <div class="recipe-eff">🌿 健脾益气</div>
+                </div>
+              </div>
+              <div class="recipe-card" onclick="openRecipe('冬瓜荷叶汤')">
+                <div class="recipe-cover t4">
+                  <span class="recipe-tag">利水</span>
+                  🥣
+                </div>
+                <div class="recipe-info">
+                  <div class="recipe-name">冬瓜荷叶汤</div>
+                  <div class="recipe-eff">💧 消肿祛脂</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 趋势 -->
+            <div class="section-title">
+              <h3>本周身体趋势</h3>
+              <div class="more" onclick="gotoPage('profile')">详情 →</div>
+            </div>
+            <div class="trend-card">
+              <svg class="trend-chart" viewBox="0 0 80 60">
+                <defs>
+                  <linearGradient id="trend-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#7CB342" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="#7CB342" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,45 L15,40 L30,42 L45,30 L60,28 L80,18 L80,60 L0,60 Z" fill="url(#trend-grad)"/>
+                <path d="M0,45 L15,40 L30,42 L45,30 L60,28 L80,18" stroke="#7CB342" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="80" cy="18" r="3" fill="#7CB342"/>
+                <circle cx="80" cy="18" r="3" fill="#7CB342" opacity="0.3">
+                  <animate attributeName="r" values="3;6;3" dur="1.5s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.3;0;0.3" dur="1.5s" repeatCount="indefinite"/>
+                </circle>
+              </svg>
+              <div class="trend-info">
+                <h4>身体状态评分</h4>
+                <p>本周较上周明显改善，<br>睡眠与消化均有提升</p>
+                <div class="delta">↑ 12 分</div>
+              </div>
+            </div>
+
+            <div style="height:20px;"></div>
+          </div>
+
+          <!-- ===== 评估流程页 ===== -->
+          <div class="page" data-page="assess">
+            <div class="greeting" style="margin-top:6px;">
+              <div>
+                <h2>今日评估</h2>
+                <p id="assess-step">问题 1 / 4</p>
+              </div>
+            </div>
+
+            <div class="q-progress" id="q-progress">
+              <div class="bar active"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+            </div>
+
+            <div class="q-card" id="q-card">
+              <!-- JS 动态注入 -->
+            </div>
+
+            <div style="height:20px;"></div>
+          </div>
+
+          <!-- ===== 加载页 ===== -->
+          <div class="page" data-page="loading">
+            <div class="loading-page">
+              <div class="loading-icon">知</div>
+              <div class="loading-text">AI 正在为你定制方案</div>
+              <div class="loading-sub">结合体质 · 时令 · 医嘱 · 状态</div>
+              <div class="loading-dots">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== AI 推荐结果页 ===== -->
+          <div class="page" data-page="recommend">
+            <div class="greeting" style="margin-top:6px;">
+              <div>
+                <h2>今日食养</h2>
+                <p>2026年6月25日 · 星期四 · 已评估 2 次</p>
+              </div>
+              <button class="refresh-btn" onclick="startReassess()">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7a4.5 4.5 0 0 1 8-2.8M11.5 7a4.5 4.5 0 0 1-8 2.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 1.5v3h-3M2 12.5v-3h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                重新评估
+              </button>
+            </div>
+
+            <!-- 今日食谱卡片 -->
+            <div class="today-plan-card" onclick="openTodayPlan()">
+              <div class="plan-header">
+                <div class="plan-icon">📋</div>
+                <div>
+                  <div class="plan-title">今日食谱</div>
+                  <div class="plan-status">
+                    <span class="plan-tag selected">已选 <span id="plan-count">0</span> 道</span>
+                    <span class="plan-tag">待选</span>
+                  </div>
+                </div>
+                <div class="plan-arrow">›</div>
+              </div>
+              <div class="plan-preview" id="plan-preview">
+                <!-- JS 动态渲染 -->
+              </div>
+              <div class="plan-footer">
+                <span>查看完整食谱</span>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+
+            <div class="quick-bar">
+              <div class="quick-bar-item" onclick="openConditionModal()">
+                <div class="qb-icon">📝</div>
+                <div class="qb-text">今日状态</div>
+                <div class="qb-arrow">›</div>
+              </div>
+              <div class="quick-bar-item" onclick="openAdvice()">
+                <div class="qb-icon">💊</div>
+                <div class="qb-text" id="advice-count-bar">3 条医嘱</div>
+                <div class="qb-arrow">›</div>
+              </div>
+              <div class="quick-bar-item" onclick="openReport()">
+                <div class="qb-icon">📋</div>
+                <div class="qb-text">体检报告</div>
+                <div class="qb-arrow">›</div>
+              </div>
+            </div>
+
+            <div class="result-hero">
+              <div class="result-top">
+                <div class="label">AI 综合分析 · 第 2 次评估</div>
+                <div class="result-time">刚刚更新</div>
+              </div>
+              <h2>湿热内蕴，<br>宜清热祛湿</h2>
+              <p>结合你今日"睡眠偏浅、午后易困、消化略差"的状态，及湿热体质特征，建议清淡饮食，多食苦味与利水食材。</p>
+              <div class="result-tags">
+                <span class="result-tag">清热</span>
+                <span class="result-tag">祛湿</span>
+                <span class="result-tag">健脾</span>
+                <span class="result-tag danger">少辛辣</span>
+                <span class="result-tag danger">忌油腻</span>
+              </div>
+            </div>
+
+            <div class="ai-chat">
+              <div class="chat-head">
+                <div class="ai-avatar">知</div>
+                <div>
+                  <div class="name">知味食养师</div>
+                  <div class="role">根据你的状态定制 · 可追问</div>
+                </div>
+                <button class="ask-btn" onclick="askAI()">问一下</button>
+              </div>
+              <div class="chat-msg">
+                小雅你好～根据你下午的状态（<strong>午后犯困</strong> + <strong>口微苦</strong>），建议今天重点<strong>清热利湿</strong>，午餐可改为<strong>薏米红豆粥</strong> + <strong>凉拌苦瓜</strong>，下午加一杯<strong>菊花决明子茶</strong>；晚餐以清淡为主，<strong>冬瓜荷叶汤</strong>帮助身体排出多余水分。避免辛辣、油腻和酒精～
+              </div>
+            </div>
+
+            <div class="segment-bar">
+              <div class="seg active" onclick="switchMealTab('all')">全部</div>
+              <div class="seg" onclick="switchMealTab('breakfast')">早餐</div>
+              <div class="seg" onclick="switchMealTab('lunch')">午餐</div>
+              <div class="seg" onclick="switchMealTab('soup')">汤品</div>
+              <div class="seg" onclick="switchMealTab('dinner')">晚餐</div>
+            </div>
+
+            <div class="meal-block">
+              <div class="meal-head">
+                <div class="meal-icon breakfast">🌅</div>
+                <div>
+                  <div class="meal-title">早餐</div>
+                  <div class="meal-sub">7:00 - 9:00 · 唤醒脾胃</div>
+                </div>
+              </div>
+              <div class="meal-dishes">
+                <div class="dish-row">
+                  <div class="dish-emoji">🥣</div>
+                  <div>
+                    <div class="dish-name">小米南瓜粥</div>
+                    <div class="dish-tag">养胃 · 温补</div>
+                  </div>
+                  <div class="dish-add-btn" onclick="addDish(this,'小米南瓜粥','🥣','早餐')">+</div>
+                </div>
+                <div class="dish-row">
+                  <div class="dish-emoji">🥬</div>
+                  <div>
+                    <div class="dish-name">凉拌莴笋丝</div>
+                    <div class="dish-tag">清热 · 通便</div>
+                  </div>
+                  <div class="dish-add-btn" onclick="addDish(this,'凉拌莴笋丝','🥬','早餐')">+</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="meal-block">
+              <div class="meal-head">
+                <div class="meal-icon lunch">☀️</div>
+                <div>
+                  <div class="meal-title">午餐</div>
+                  <div class="meal-sub">11:30 - 13:00 · 营养均衡</div>
+                </div>
+              </div>
+              <div class="meal-dishes">
+                <div class="dish-row">
+                  <div class="dish-emoji">🍲</div>
+                  <div>
+                    <div class="dish-name">薏米红豆粥</div>
+                    <div class="dish-tag">祛湿 · 健脾</div>
+                  </div>
+                  <div class="dish-add-btn" onclick="addDish(this,'薏米红豆粥','🍲','午餐')">+</div>
+                </div>
+                <div class="dish-row">
+                  <div class="dish-emoji">🥗</div>
+                  <div>
+                    <div class="dish-name">凉拌苦瓜</div>
+                    <div class="dish-tag">清热 · 泻火</div>
+                  </div>
+                  <div class="dish-add-btn" onclick="addDish(this,'凉拌苦瓜','🥗','午餐')">+</div>
+                </div>
+                <div class="dish-row">
+                  <div class="dish-emoji">🐟</div>
+                  <div>
+                    <div class="dish-name">清蒸鲈鱼</div>
+                    <div class="dish-tag">优质蛋白 · 易消化</div>
+                  </div>
+                  <div class="dish-add-btn" onclick="addDish(this,'清蒸鲈鱼','🐟','午餐')">+</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="meal-block">
+              <div class="meal-head">
+                <div class="meal-icon soup">🥣</div>
+                <div>
+                  <div class="meal-title">汤品</div>
+                  <div class="meal-sub">饭前小碗 · 暖胃生津</div>
+                </div>
+              </div>
+              <div class="meal-dishes">
+                <div class="dish-row">
+                  <div class="dish-emoji">🍵</div>
+                  <div>
+                    <div class="dish-name">冬瓜荷叶汤</div>
+                    <div class="dish-tag">利水 · 消肿 · 减脂</div>
+                  </div>
+                  <div class="dish-add-btn" onclick="addDish(this,'冬瓜荷叶汤','🍵','汤品')">+</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="meal-block">
+              <div class="meal-head">
+                <div class="meal-icon dinner">🌙</div>
+                <div>
+                  <div class="meal-title">晚餐</div>
+                  <div class="meal-sub">18:00 - 19:30 · 清淡为主</div>
+                </div>
+              </div>
+              <div class="meal-dishes">
+                <div class="dish-row">
+                  <div class="dish-emoji">🍚</div>
+                  <div>
+                    <div class="dish-name">糙米饭</div>
+                    <div class="dish-tag">饱腹 · 稳定血糖</div>
+                  </div>
+                  <div class="dish-add-btn" onclick="addDish(this,'糙米饭','🍚','晚餐')">+</div>
+                </div>
+                <div class="dish-row">
+                  <div class="dish-emoji">🥒</div>
+                  <div>
+                    <div class="dish-name">蒜蓉西兰花</div>
+                    <div class="dish-tag">抗氧化 · 排毒</div>
+                  </div>
+                  <div class="dish-add-btn" onclick="addDish(this,'蒜蓉西兰花','🥒','晚餐')">+</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 加餐/下午茶 -->
+            <div class="meal-block snack-block">
+              <div class="meal-head">
+                <div class="meal-icon soup">🍵</div>
+                <div>
+                  <div class="meal-title">午后茶饮</div>
+                  <div class="meal-sub">15:00 · 醒神明目</div>
+                </div>
+              </div>
+              <div class="meal-dishes">
+                <div class="dish-row">
+                  <div class="dish-emoji">🌼</div>
+                  <div>
+                    <div class="dish-name">菊花决明子茶</div>
+                    <div class="dish-tag">清肝 · 明目</div>
+                  </div>
+                  <div class="dish-add-btn" onclick="addDish(this,'菊花决明子茶','🌼','午后茶')">+</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 底部操作区 -->
+            <div id="selected-count" style="text-align:center;font-size:12px;color:var(--text-light);margin-bottom:10px;min-height:18px;"></div>
+            <div class="bottom-actions">
+              <button class="action-btn" onclick="generateNewPlan()">
+                <span style="font-size:16px;">🔄</span>
+                <span>换一换</span>
+              </button>
+              <button class="action-btn" onclick="openShare()">
+                <span style="font-size:16px;">📤</span>
+                <span>分享</span>
+              </button>
+              <button class="action-btn" onclick="addToShopping()">
+                <span style="font-size:16px;">🛒</span>
+                <span>购物清单</span>
+              </button>
+              <button class="action-btn primary" onclick="savePlan()">
+                <span style="font-size:16px;">💾</span>
+                <span>保存方案</span>
+              </button>
+            </div>
+
+            <div style="height:20px;"></div>
+          </div>
+
+          <!-- ===== 食谱库页 ===== -->
+          <div class="page" data-page="recipe">
+            <div class="greeting" style="margin-top:6px;">
+              <div>
+                <h2>食疗食谱</h2>
+                <p>3,247 道食谱等你探索</p>
+              </div>
+            </div>
+
+            <div class="search-bar">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="7" cy="7" r="5" stroke="#8B8B8B" stroke-width="1.5"/>
+                <path d="M11 11l3 3" stroke="#8B8B8B" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <input id="recipe-search" placeholder="搜索食谱、食材、功效..." oninput="filterRecipes()" />
+            </div>
+
+            <div class="filter-chips" id="filter-chips">
+              <div class="chip active" onclick="setFilter('全部',this)">全部</div>
+              <div class="chip" onclick="setFilter('祛湿',this)">祛湿</div>
+              <div class="chip" onclick="setFilter('清热',this)">清热</div>
+              <div class="chip" onclick="setFilter('健脾',this)">健脾</div>
+              <div class="chip" onclick="setFilter('养血',this)">养血</div>
+              <div class="chip" onclick="setFilter('润肺',this)">润肺</div>
+              <div class="chip" onclick="setFilter('温阳',this)">温阳</div>
+              <div class="chip" onclick="setFilter('滋阴',this)">滋阴</div>
+              <div class="chip" onclick="setFilter('安神',this)">安神</div>
+              <div class="chip" onclick="setFilter('消食',this)">消食</div>
+              <div class="chip" onclick="setFilter('明目',this)">明目</div>
+              <div class="chip" onclick="setFilter('补气',this)">补气</div>
+              <div class="chip" onclick="setFilter('润肠',this)">润肠</div>
+            </div>
+
+            <div class="section-title">
+              <h3 id="recipe-count">为你推荐</h3>
+            </div>
+
+            <div class="recipe-grid" id="recipe-grid">
+              <!-- JS 动态渲染 -->
+            </div>
+
+            <div style="height:20px;"></div>
+          </div>
+
+          <!-- ===== 我的页面 ===== -->
+          <div class="page" data-page="profile">
+            <div class="profile-head">
+              <div class="profile-info">
+                <div class="profile-avatar">雅</div>
+                <div>
+                  <div class="profile-name">小雅</div>
+                  <div class="profile-meta">
+                    <span>已坚持 47 天</span>
+                    <span>·</span>
+                    <span>连续记录中</span>
+                  </div>
+                </div>
+              </div>
+              <div class="constitution-tag">🌿 湿热质 · 倾向阳虚</div>
+            </div>
+
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-val stat-value weight">52.8</div>
+                <div class="stat-label">体重 (kg)</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-val stat-value fat">24.6%</div>
+                <div class="stat-label">体脂率</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-val stat-value bmi">21.4</div>
+                <div class="stat-label">BMI</div>
+                <div class="stat-status bmi-status" style="font-size:10px;color:#52c41a;margin-top:2px;">正常</div>
+              </div>
+            </div>
+
+            <div class="section-title">
+              <h3>数据趋势</h3>
+              <div class="more">近 30 天 ▾</div>
+            </div>
+            <div class="trend-card">
+              <svg class="trend-chart" viewBox="0 0 80 60">
+                <defs>
+                  <linearGradient id="trend-grad2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#C9A84C" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,30 L15,35 L30,32 L45,38 L60,42 L80,48 L80,60 L0,60 Z" fill="url(#trend-grad2)"/>
+                <path d="M0,30 L15,35 L30,32 L45,38 L60,42 L80,48" stroke="#C9A84C" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="80" cy="48" r="3" fill="#C9A84C"/>
+              </svg>
+              <div class="trend-info">
+                <h4>体重变化</h4>
+                <p>近 30 天下降 1.2kg<br>符合预期调理节奏</p>
+                <div class="delta down">↓ 1.2 kg</div>
+              </div>
+            </div>
+
+            <div class="section-title">
+              <h3>我的健康</h3>
+            </div>
+
+            <div class="menu-card">
+              <div class="menu-item" onclick="openReport()">
+                <div class="menu-icon gold">📋</div>
+                <div class="menu-text">
+                  <div class="menu-title">体检报告</div>
+                  <div class="menu-desc">已上传 2 份 · 上次 4 月 12 日</div>
+                </div>
+                <div class="menu-arrow">›</div>
+              </div>
+              <div class="menu-item" onclick="openAdvice()">
+                <div class="menu-icon red">💊</div>
+                <div class="menu-text">
+                  <div class="menu-title">医嘱管理</div>
+                  <div class="menu-desc">3 条有效医嘱</div>
+                </div>
+                <div class="menu-arrow">›</div>
+              </div>
+              <div class="menu-item" onclick="openBodyData()">
+                <div class="menu-icon green">📊</div>
+                <div class="menu-text">
+                  <div class="menu-title">身体数据</div>
+                  <div class="menu-desc">体重 · 体脂 · 围度</div>
+                </div>
+                <div class="menu-arrow">›</div>
+              </div>
+              <div class="menu-item">
+                <div class="menu-icon purple">🧬</div>
+                <div class="menu-text">
+                  <div class="menu-title">体质测试</div>
+                  <div class="menu-desc">已测试 · 湿热质</div>
+                </div>
+                <div class="menu-arrow">›</div>
+              </div>
+            </div>
+
+            <div class="section-title">
+              <h3>更多</h3>
+            </div>
+
+            <div class="menu-card">
+              <div class="menu-item">
+                <div class="menu-icon blue">⭐</div>
+                <div class="menu-text">
+                  <div class="menu-title">开通会员</div>
+                  <div class="menu-desc">深度方案 · 报告解读</div>
+                </div>
+                <div class="menu-arrow">›</div>
+              </div>
+              <div class="menu-item">
+                <div class="menu-icon gold">⚙️</div>
+                <div class="menu-text">
+                  <div class="menu-title">设置</div>
+                  <div class="menu-desc">通知 · 隐私 · 关于</div>
+                </div>
+                <div class="menu-arrow">›</div>
+              </div>
+            </div>
+
+            <div style="height:20px;"></div>
+          </div>
+        </div>
+
+        <!-- 底部 TabBar -->
+        <div class="tabbar">
+          <div class="tab active" data-tab="home" onclick="gotoPage('home')">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M3 12L12 4l9 8M5 10v10h14V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>首页</span>
+          </div>
+          <div class="tab" data-tab="recommend" onclick="gotoPage('recommend')">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>食养</span>
+          </div>
+          <div class="tab" data-tab="recipe" onclick="gotoPage('recipe')">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 5h16M4 12h16M4 19h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span>食谱</span>
+          </div>
+          <div class="tab" data-tab="profile" onclick="gotoPage('profile')">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M4 21c0-4 4-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span>我的</span>
+          </div>
+        </div>
+
+        <!-- 弹层: 食谱详情 -->
+        <div class="modal" id="recipe-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <div style="text-align:center;margin-bottom:16px;">
+              <div style="font-size:80px;" id="recipe-modal-emoji">🍲</div>
+            </div>
+            <h2 class="serif" style="font-size:22px;text-align:center;margin-bottom:6px;" id="recipe-modal-name">薏米红豆粥</h2>
+            <div style="text-align:center;margin-bottom:10px;">
+              <span style="display:inline-block;background:rgba(139,105,20,0.08);color:var(--primary);font-size:11px;padding:3px 10px;border-radius:12px;font-weight:500;" id="recipe-modal-cat">祛湿</span>
+            </div>
+            <div style="text-align:center;color:var(--text-light);font-size:12px;margin-bottom:18px;" id="recipe-modal-eff">清热利湿 · 健脾和胃</div>
+
+            <div class="section-title"><h3>食材</h3></div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;" id="recipe-modal-ingredients">
+              <!-- JS 注入 -->
+            </div>
+
+            <div class="section-title"><h3>做法</h3></div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;" id="recipe-modal-steps">
+              <!-- JS 注入 -->
+            </div>
+
+            <div class="section-title"><h3>适宜体质</h3></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;">
+              <span class="chip active">湿热质</span>
+              <span class="chip active">痰湿质</span>
+              <span class="chip">平和质</span>
+            </div>
+
+            <button class="q-next" onclick="closeModal('recipe-modal')">添加到今日食谱</button>
+          </div>
+        </div>
+
+        <!-- 弹层: 医嘱管理 -->
+        <div class="modal" id="advice-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <h2 class="serif" style="font-size:20px;margin-bottom:6px;">医嘱管理</h2>
+            <p style="color:var(--text-light);font-size:12px;margin-bottom:14px;">录入的医嘱将自动纳入每日推荐</p>
+
+            <div class="segment-bar" style="margin-bottom:12px;">
+              <div class="seg active" onclick="switchAdviceTab('all',this)">全部</div>
+              <div class="seg" onclick="switchAdviceTab('忌口类',this)">忌口</div>
+              <div class="seg" onclick="switchAdviceTab('补充类',this)">补充</div>
+              <div class="seg" onclick="switchAdviceTab('限制类',this)">限制</div>
+              <div class="seg" onclick="switchAdviceTab('调理类',this)">调理</div>
+            </div>
+
+            <div style="background:linear-gradient(135deg,#fff8e1,#fff3e0);border-radius:14px;padding:14px;margin-bottom:14px;">
+              <div style="font-size:12px;font-weight:500;color:var(--primary);margin-bottom:8px;">快速添加</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+                <span class="quick-tag" onclick="quickAdvice('少吃辛辣','忌口类','长期')">少吃辛辣</span>
+                <span class="quick-tag" onclick="quickAdvice('少盐清淡','忌口类','长期')">少盐清淡</span>
+                <span class="quick-tag" onclick="quickAdvice('忌生冷','忌口类','长期')">忌生冷</span>
+                <span class="quick-tag" onclick="quickAdvice('少油腻','忌口类','长期')">少油腻</span>
+                <span class="quick-tag" onclick="quickAdvice('戒烟限酒','忌口类','长期')">戒烟限酒</span>
+                <span class="quick-tag" onclick="quickAdvice('多补钙','补充类','长期')">多补钙</span>
+                <span class="quick-tag" onclick="quickAdvice('多吃蔬果','补充类','长期')">多吃蔬果</span>
+                <span class="quick-tag" onclick="quickAdvice('补充蛋白质','补充类','长期')">补充蛋白</span>
+                <span class="quick-tag" onclick="quickAdvice('多吃粗粮','补充类','长期')">多吃粗粮</span>
+                <span class="quick-tag" onclick="quickAdvice('控制血糖','限制类','长期')">控制血糖</span>
+                <span class="quick-tag" onclick="quickAdvice('低嘌呤饮食','限制类','长期')">低嘌呤</span>
+                <span class="quick-tag" onclick="quickAdvice('控制血脂','限制类','长期')">控血脂</span>
+                <span class="quick-tag" onclick="quickAdvice('控制体重','限制类','长期')">控体重</span>
+                <span class="quick-tag" onclick="quickAdvice('健脾养胃','调理类','长期')">健脾养胃</span>
+                <span class="quick-tag" onclick="quickAdvice('补气养血','调理类','长期')">补气养血</span>
+                <span class="quick-tag" onclick="quickAdvice('祛湿排毒','调理类','长期')">祛湿排毒</span>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <input id="advice-input" placeholder="输入自定义医嘱..." style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;background:var(--bg-card);color:var(--text);" />
+                <select id="advice-cat-select" style="padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:12px;font-family:inherit;outline:none;background:var(--bg-card);color:var(--text);">
+                  <option value="忌口类">忌口类</option>
+                  <option value="补充类">补充类</option>
+                  <option value="限制类">限制类</option>
+                  <option value="调理类">调理类</option>
+                </select>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <select id="advice-dur-select" style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:12px;font-family:inherit;outline:none;background:var(--bg-card);color:var(--text);">
+                  <option value="长期">长期有效</option>
+                  <option value="3个月">3 个月</option>
+                  <option value="1个月">1 个月</option>
+                  <option value="2周">2 周</option>
+                  <option value="1周">1 周</option>
+                  <option value="3天">3 天</option>
+                </select>
+                <button onclick="addAdvice()" style="flex:0 0 auto;width:36px;height:36px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;">+</button>
+              </div>
+            </div>
+
+            <div class="section-title" style="margin-bottom:10px;"><h3>当前有效</h3><div class="more" id="advice-count">0 条医嘱</div></div>
+            <div class="menu-card" id="advice-list">
+            </div>
+
+            <div class="section-title" style="margin-bottom:10px;margin-top:14px;"><h3>已过期</h3></div>
+            <div class="menu-card" id="advice-expired" style="opacity:0.6;">
+            </div>
+          </div>
+        </div>
+
+        <!-- 弹层: 编辑医嘱 -->
+        <div class="modal" id="advice-edit-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <h2 class="serif" style="font-size:20px;margin-bottom:16px;">编辑医嘱</h2>
+
+            <div style="margin-bottom:14px;">
+              <div style="font-size:12px;color:var(--text-light);margin-bottom:6px;">医嘱内容</div>
+              <input id="edit-advice-text" placeholder="输入医嘱内容..." style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:var(--bg-card);color:var(--text);" />
+            </div>
+
+            <div style="margin-bottom:14px;">
+              <div style="font-size:12px;color:var(--text-light);margin-bottom:6px;">分类</div>
+              <div style="display:flex;gap:8px;">
+                <button class="advice-cat-btn" data-cat="忌口类" onclick="selectEditCat('忌口类')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-card);font-size:13px;cursor:pointer;font-family:inherit;color:var(--text);">🚫 忌口</button>
+                <button class="advice-cat-btn" data-cat="补充类" onclick="selectEditCat('补充类')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-card);font-size:13px;cursor:pointer;font-family:inherit;color:var(--text);">💪 补充</button>
+                <button class="advice-cat-btn" data-cat="限制类" onclick="selectEditCat('限制类')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-card);font-size:13px;cursor:pointer;font-family:inherit;color:var(--text);">⚠️ 限制</button>
+                <button class="advice-cat-btn" data-cat="调理类" onclick="selectEditCat('调理类')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-card);font-size:13px;cursor:pointer;font-family:inherit;color:var(--text);">🌿 调理</button>
+              </div>
+            </div>
+
+            <div style="margin-bottom:20px;">
+              <div style="font-size:12px;color:var(--text-light);margin-bottom:6px;">有效期</div>
+              <select id="edit-advice-dur" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:var(--bg-card);color:var(--text);">
+                <option value="长期">长期有效</option>
+                <option value="3个月">3 个月</option>
+                <option value="1个月">1 个月</option>
+                <option value="2周">2 周</option>
+                <option value="1周">1 周</option>
+                <option value="3天">3 天</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:10px;">
+              <button class="q-next" style="flex:1;background:var(--bg-cream);color:var(--text);" onclick="closeModal('advice-edit-modal')">取消</button>
+              <button class="q-next" style="flex:1;" onclick="saveEditAdvice()">保存修改</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 弹层: 体检报告 -->
+        <div class="modal" id="report-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <h2 class="serif" style="font-size:20px;margin-bottom:6px;">体检报告解读</h2>
+            <p style="color:var(--text-light);font-size:12px;margin-bottom:14px;">拍照上传报告，AI 自动识别异常指标</p>
+
+            <div id="report-upload-section">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                <div style="background:var(--bg);border:2px dashed rgba(139,105,20,0.3);border-radius:14px;padding:20px 10px;text-align:center;cursor:pointer;" onclick="simulateUploadReport('camera')">
+                  <div style="font-size:32px;margin-bottom:6px;">📷</div>
+                  <div style="font-size:13px;font-weight:500;margin-bottom:2px;">拍照上传</div>
+                  <div style="font-size:10px;color:var(--text-light);">对准报告拍照</div>
+                </div>
+                <div style="background:var(--bg);border:2px dashed rgba(139,105,20,0.3);border-radius:14px;padding:20px 10px;text-align:center;cursor:pointer;" onclick="simulateUploadReport('album')">
+                  <div style="font-size:32px;margin-bottom:6px;">🖼️</div>
+                  <div style="font-size:13px;font-weight:500;margin-bottom:2px;">相册选择</div>
+                  <div style="font-size:10px;color:var(--text-light);">从相册上传图片</div>
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+                <div style="background:#fff8e1;border-radius:10px;padding:10px;text-align:center;cursor:pointer;" onclick="simulateUploadReport('sample')">
+                  <div style="font-size:20px;margin-bottom:4px;">📋</div>
+                  <div style="font-size:11px;color:#8B6914;font-weight:500;">查看示例</div>
+                </div>
+                <div style="background:#e8f5e9;border-radius:10px;padding:10px;text-align:center;cursor:pointer;" onclick="loadReportHistory()">
+                  <div style="font-size:20px;margin-bottom:4px;">📊</div>
+                  <div style="font-size:11px;color:#2e7d32;font-weight:500;">历史报告</div>
+                </div>
+                <div style="background:#e3f2fd;border-radius:10px;padding:10px;text-align:center;cursor:pointer;" onclick="simulateUploadReport('manual')">
+                  <div style="font-size:20px;margin-bottom:4px;">✏️</div>
+                  <div style="font-size:11px;color:#1565c0;font-weight:500;">手动录入</div>
+                </div>
+              </div>
+
+              <div style="background:#fff8e1;border-radius:12px;padding:12px;font-size:11px;color:#8B6914;margin-bottom:14px;line-height:1.6;">
+                💡 <b>小贴士：</b>建议上传完整的检验报告单，包含血常规、生化指标等。AI 将自动识别异常指标并生成针对性的饮食建议。
+              </div>
+            </div>
+
+            <div id="report-loading" style="display:none;text-align:center;padding:30px 0;">
+              <div style="font-size:48px;margin-bottom:14px;animation:spin 1s linear infinite;">⚙️</div>
+              <div style="font-size:13px;font-weight:500;margin-bottom:6px;" id="report-loading-text">正在识别报告...</div>
+              <div style="font-size:11px;color:var(--text-light);">AI 正在分析 36 项指标</div>
+            </div>
+
+            <div id="report-result" style="display:none;">
+              <div style="background:linear-gradient(135deg,#fff8e1,#fff3e0);border-radius:14px;padding:16px;margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                  <div>
+                    <div style="font-size:13px;font-weight:600;margin-bottom:4px;" id="report-title">2026 年度体检报告</div>
+                    <div style="font-size:11px;color:var(--text-light);" id="report-date">上传于 2026-06-20 · 共检测 36 项</div>
+                  </div>
+                  <div style="font-size:10px;background:rgba(139,105,20,0.1);color:var(--primary);padding:3px 8px;border-radius:10px;">AI 解读</div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                  <div style="text-align:center;background:#fff;border-radius:10px;padding:10px;">
+                    <div style="font-size:20px;font-weight:600;color:#2ecc71;" id="report-normal">28</div>
+                    <div style="font-size:10px;color:var(--text-light);">正常</div>
+                  </div>
+                  <div style="text-align:center;background:#fff;border-radius:10px;padding:10px;">
+                    <div style="font-size:20px;font-weight:600;color:#f39c12;" id="report-mild">6</div>
+                    <div style="font-size:10px;color:var(--text-light);">轻度异常</div>
+                  </div>
+                  <div style="text-align:center;background:#fff;border-radius:10px;padding:10px;">
+                    <div style="font-size:20px;font-weight:600;color:#e74c3c;" id="report-serious">2</div>
+                    <div style="font-size:10px;color:var(--text-light);">需关注</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-title" style="margin-bottom:10px;"><h3>异常指标</h3><div class="more" onclick="toggleReportDetail()">展开 ▾</div></div>
+              <div id="report-abnormal" style="display:none;margin-bottom:14px;">
+                <div class="menu-card" id="report-abnormal-list">
+                </div>
+              </div>
+
+              <div class="section-title" style="margin-bottom:10px;"><h3>中医体质评估</h3></div>
+              <div class="menu-card" style="margin-bottom:14px;">
+                <div class="menu-item" style="align-items:flex-start;">
+                  <div class="menu-icon gold">⚖️</div>
+                  <div class="menu-text">
+                    <div class="menu-title">痰湿体质倾向</div>
+                    <div class="menu-desc" style="line-height:1.6;margin-top:4px;">
+                      血脂偏高 + 尿酸高 → 体内湿浊内蕴<br>
+                      建议：健脾祛湿、化痰降浊
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-title" style="margin-bottom:10px;"><h3>饮食调理建议</h3></div>
+              <div style="margin-bottom:14px;">
+                <div style="background:#e8f5e9;border-radius:12px;padding:14px;margin-bottom:10px;">
+                  <div style="font-size:12px;font-weight:600;color:#2e7d32;margin-bottom:8px;">✅ 宜多吃</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#2e7d32;">薏米</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#2e7d32;">赤小豆</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#2e7d32;">冬瓜</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#2e7d32;">芹菜</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#2e7d32;">黑木耳</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#2e7d32;">燕麦</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#2e7d32;">山楂</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#2e7d32;">枸杞</span>
+                  </div>
+                </div>
+                <div style="background:#ffebee;border-radius:12px;padding:14px;margin-bottom:10px;">
+                  <div style="font-size:12px;font-weight:600;color:#c62828;margin-bottom:8px;">❌ 应少吃</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#c62828;">动物内脏</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#c62828;">海鲜</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#c62828;">啤酒</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#c62828;">肥肉</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#c62828;">油炸食品</span>
+                    <span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#c62828;">甜食</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-title" style="margin-bottom:10px;"><h3>推荐食疗方</h3></div>
+              <div class="menu-card" style="margin-bottom:14px;">
+                <div class="menu-item" onclick="openRecipe('薏米红豆粥');closeModal('report-modal');">
+                  <div style="font-size:28px;">🍲</div>
+                  <div class="menu-text" style="flex:1;">
+                    <div class="menu-title">薏米红豆粥</div>
+                    <div class="menu-desc">利水渗湿 · 降尿酸</div>
+                  </div>
+                  <div class="menu-arrow">›</div>
+                </div>
+                <div class="menu-item" onclick="openRecipe('冬瓜荷叶汤');closeModal('report-modal');">
+                  <div style="font-size:28px;">🍵</div>
+                  <div class="menu-text" style="flex:1;">
+                    <div class="menu-title">冬瓜荷叶汤</div>
+                    <div class="menu-desc">降脂消肿 · 清湿热</div>
+                  </div>
+                  <div class="menu-arrow">›</div>
+                </div>
+                <div class="menu-item" onclick="openRecipe('山楂麦芽茶');closeModal('report-modal');">
+                  <div style="font-size:28px;">🍵</div>
+                  <div class="menu-text" style="flex:1;">
+                    <div class="menu-title">山楂麦芽茶</div>
+                    <div class="menu-desc">消食降脂 · 助消化</div>
+                  </div>
+                  <div class="menu-arrow">›</div>
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                <button class="q-next" style="background:var(--bg-cream);color:var(--text);font-size:13px;padding:12px;" onclick="reuploadReport()">
+                  🔄 重新解读
+                </button>
+                <button class="q-next" style="font-size:13px;padding:12px;" onclick="applyReportToRecommend()">
+                  应用到推荐
+                </button>
+              </div>
+            </div>
+
+            <div class="section-title" style="margin-top:14px;margin-bottom:10px;"><h3>已解读报告</h3></div>
+            <div class="menu-card" id="report-history">
+            </div>
+          </div>
+        </div>
+
+        <!-- 弹层: 指标详情 -->
+        <div class="modal" id="indicator-detail-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <h2 class="serif" style="font-size:20px;" id="indicator-name">尿酸</h2>
+              <button onclick="closeModal('indicator-detail-modal')" style="background:none;border:none;font-size:22px;color:var(--text-mute);cursor:pointer;">✕</button>
+            </div>
+
+            <div id="indicator-detail-content">
+            </div>
+
+            <button class="q-next" style="margin-top:16px;" onclick="closeModal('indicator-detail-modal')">我知道了</button>
+          </div>
+        </div>
+
+        <!-- 弹层: 身体数据 -->
+        <div class="modal" id="body-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <h2 class="serif" style="font-size:20px;margin-bottom:6px;">身体数据</h2>
+            <p style="color:var(--text-light);font-size:12px;margin-bottom:18px;">记录并跟踪身体数据变化</p>
+
+            <div style="background:linear-gradient(135deg,#fff8e1,#fff3e0);border-radius:16px;padding:18px;margin-bottom:16px;">
+              <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;">今日记录</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <div style="font-size:11px;color:var(--text-light);">体重</div>
+                  <div style="display:flex;align-items:baseline;gap:2px;">
+                    <input type="number" id="body-weight" placeholder="0.0" style="border:none;background:transparent;font-family:'Noto Serif SC',serif;font-size:20px;font-weight:600;width:60px;outline:none;color:var(--primary);" />
+                    <span style="font-size:11px;color:var(--text-light);">kg</span>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:11px;color:var(--text-light);">体脂率</div>
+                  <div style="display:flex;align-items:baseline;gap:2px;">
+                    <input type="number" id="body-fat" placeholder="0.0" style="border:none;background:transparent;font-family:'Noto Serif SC',serif;font-size:20px;font-weight:600;width:60px;outline:none;color:var(--primary);" />
+                    <span style="font-size:11px;color:var(--text-light);">%</span>
+                  </div>
+                </div>
+                <div style="grid-column:1/-1;">
+                  <div style="font-size:11px;color:var(--text-light);">BMI</div>
+                  <div style="display:flex;align-items:baseline;gap:2px;">
+                    <input type="number" id="body-bmi" placeholder="0.0" step="0.1" style="border:none;background:transparent;font-family:'Noto Serif SC',serif;font-size:20px;font-weight:600;width:60px;outline:none;color:var(--primary);" />
+                    <span style="font-size:11px;color:var(--text-light);">BMI</span>
+                  </div>
+                </div>
+              </div>
+              <button class="q-next" style="margin-top:14px;padding:10px;font-size:13px;" onclick="saveBodyData()">保存记录</button>
+            </div>
+
+            <div class="section-title"><h3>历史记录</h3></div>
+            <div class="menu-card" id="body-history">
+              <!-- JS 动态渲染 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 弹层: 今日状态查看/修改 -->
+        <div class="modal" id="condition-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <h2 class="serif" style="font-size:20px;margin-bottom:6px;">今日状态记录</h2>
+            <p style="color:var(--text-light);font-size:12px;margin-bottom:16px;">已记录 2 次，可随时修改</p>
+
+            <div class="menu-card">
+              <div class="menu-item" onclick="startReassess()">
+                <div class="menu-icon green">🌅</div>
+                <div class="menu-text">
+                  <div class="menu-title">上午 09:30</div>
+                  <div class="menu-desc">睡眠一般 · 轻微疲劳 · 消化正常</div>
+                </div>
+                <div class="menu-arrow">✏️</div>
+              </div>
+              <div class="menu-item" onclick="startReassess()">
+                <div class="menu-icon gold">☀️</div>
+                <div class="menu-text">
+                  <div class="menu-title">下午 15:20</div>
+                  <div class="menu-desc">午后犯困 · 口微苦 · 消化略差</div>
+                </div>
+                <div class="menu-arrow">✏️</div>
+              </div>
+            </div>
+
+            <button class="q-next" onclick="startReassess()">
+              + 新增一次评估
+            </button>
+          </div>
+        </div>
+
+        <!-- 弹层: 购物清单 -->
+        <div class="modal" id="shopping-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <h2 class="serif" style="font-size:20px;margin-bottom:6px;">今日购物清单</h2>
+            <p style="color:var(--text-light);font-size:12px;margin-bottom:16px;">根据已选食谱自动生成</p>
+
+            <div class="menu-card" id="shopping-list">
+              <!-- JS 动态渲染 -->
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:16px;">
+              <button class="q-next" style="flex:1;background:var(--bg-cream);color:var(--text);" onclick="closeModal('shopping-modal')">
+                继续选菜
+              </button>
+              <button class="q-next" style="flex:1;" onclick="copyShoppingList()">
+                一键复制
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 弹层: 追问 AI -->
+        <div class="modal" id="ask-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <h2 class="serif" style="font-size:20px;margin-bottom:10px;">问问食养师</h2>
+
+            <div style="background:var(--bg);border-radius:14px;padding:14px;margin-bottom:14px;">
+              <div style="display:flex;gap:8px;margin-bottom:10px;">
+                <div class="ai-avatar" style="width:28px;height:28px;font-size:12px;">知</div>
+                <div style="background:#fff;padding:10px 12px;border-radius:12px;border-top-left-radius:4px;font-size:13px;line-height:1.6;flex:1;">
+                  你好呀～有什么饮食养生问题都可以问我哦😊
+                </div>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+              <button class="ask-chip" onclick="askQuestion('来月经可以吃什么？')">来月经可以吃什么？</button>
+              <button class="ask-chip" onclick="askQuestion('湿气重怎么调理？')">湿气重怎么调理？</button>
+              <button class="ask-chip" onclick="askQuestion('熬夜后吃什么好？')">熬夜后吃什么好？</button>
+              <button class="ask-chip" onclick="askQuestion('尿酸高饮食禁忌？')">尿酸高饮食禁忌？</button>
+            </div>
+
+            <div class="search-bar">
+              <input placeholder="输入你的问题..." />
+              <button style="background:none;border:none;color:var(--primary);font-weight:600;font-size:13px;cursor:pointer;">发送</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 弹层: 分享 -->
+        <div class="modal" id="share-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <h2 class="serif" style="font-size:20px;text-align:center;margin-bottom:4px;">分享今日食养方案</h2>
+            <p style="color:var(--text-light);font-size:12px;text-align:center;margin-bottom:20px;">让家人朋友一起健康饮食</p>
+
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+              <div style="text-align:center;cursor:pointer;">
+                <div style="width:48px;height:48px;background:#07C160;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:22px;">💬</div>
+                <div style="font-size:11px;">微信好友</div>
+              </div>
+              <div style="text-align:center;cursor:pointer;">
+                <div style="width:48px;height:48px;background:#07C160;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:22px;">🌐</div>
+                <div style="font-size:11px;">朋友圈</div>
+              </div>
+              <div style="text-align:center;cursor:pointer;">
+                <div style="width:48px;height:48px;background:#FF4D4F;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:22px;">📕</div>
+                <div style="font-size:11px;">小红书</div>
+              </div>
+              <div style="text-align:center;cursor:pointer;">
+                <div style="width:48px;height:48px;background:#E8E8E8;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:22px;">📥</div>
+                <div style="font-size:11px;">保存图片</div>
+              </div>
+            </div>
+
+            <button class="q-next" style="background:var(--bg-cream);color:var(--text);" onclick="closeModal('share-modal')">取消</button>
+          </div>
+        </div>
+
+        <!-- 弹层: 已保存的今日食谱 -->
+        <div class="modal" id="saved-plan-modal">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-handle"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <h2 class="serif" style="font-size:20px;">今日食谱方案</h2>
+              <div style="font-size:11px;color:var(--text-light);background:var(--bg-cream);padding:4px 10px;border-radius:12px;">2026年6月25日</div>
+            </div>
+
+            <div style="background:linear-gradient(135deg,rgba(139,105,20,0.06),rgba(201,168,76,0.06));border-radius:14px;padding:14px;margin-bottom:16px;border:1px solid rgba(139,105,20,0.1);">
+              <div style="font-size:12px;color:var(--primary);font-weight:600;margin-bottom:6px;">AI 食养方向</div>
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">湿热内蕴 · 清热祛湿</div>
+              <div style="font-size:11px;color:var(--text-light);">结合你的湿热体质，今日重点清热利湿、健脾和胃</div>
+            </div>
+
+            <!-- 已选菜品列表 -->
+            <div id="saved-dishes-list">
+              <!-- JS 动态渲染 -->
+            </div>
+
+            <div style="margin-top:16px;display:flex;gap:8px;">
+              <button class="q-next" style="flex:1;background:var(--bg-cream);color:var(--text);" onclick="closeModal('saved-plan-modal')">
+                继续调整
+              </button>
+              <button class="q-next" style="flex:1;" onclick="confirmPlan()">
+                确认方案 ✓
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 弹层: 今日食谱完整查看 -->
+        <div class="modal" id="today-plan-modal">
+          <div class="modal-content" onclick="event.stopPropagation()" style="max-height:70vh;overflow-y:auto;">
+            <div class="modal-handle"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <h2 class="serif" style="font-size:20px;">今日食谱</h2>
+              <button onclick="closeModal('today-plan-modal')" style="background:none;border:none;font-size:20px;color:var(--text-mute);cursor:pointer;">✕</button>
+            </div>
+
+            <div style="background:linear-gradient(135deg,rgba(139,105,20,0.06),rgba(201,168,76,0.06));border-radius:14px;padding:12px;margin-bottom:16px;border:1px solid rgba(139,105,20,0.1);">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:16px;">🌿</span>
+                <span style="font-size:13px;font-weight:600;color:var(--primary);">湿热内蕴 · 宜清热祛湿</span>
+              </div>
+            </div>
+
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-time">7:00 - 9:00</div>
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="timeline-title">🌅 早餐</div>
+                  <div class="timeline-dishes">
+                    <div class="timeline-dish" onclick="toggleDish('小米南瓜粥','🥣','早餐',this)">
+                      <div class="td-emoji">🥣</div>
+                      <div class="td-info">
+                        <div class="td-name">小米南瓜粥</div>
+                        <div class="td-tag">养胃 · 温补</div>
+                      </div>
+                      <div class="td-add">+</div>
+                    </div>
+                    <div class="timeline-dish" onclick="toggleDish('凉拌莴笋丝','🥬','早餐',this)">
+                      <div class="td-emoji">🥬</div>
+                      <div class="td-info">
+                        <div class="td-name">凉拌莴笋丝</div>
+                        <div class="td-tag">清热 · 通便</div>
+                      </div>
+                      <div class="td-add">+</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-time">11:30 - 13:00</div>
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="timeline-title">☀️ 午餐</div>
+                  <div class="timeline-dishes">
+                    <div class="timeline-dish" onclick="toggleDish('薏米红豆粥','🍲','午餐',this)">
+                      <div class="td-emoji">🍲</div>
+                      <div class="td-info">
+                        <div class="td-name">薏米红豆粥</div>
+                        <div class="td-tag">祛湿 · 健脾</div>
+                      </div>
+                      <div class="td-add">+</div>
+                    </div>
+                    <div class="timeline-dish" onclick="toggleDish('凉拌苦瓜','🥗','午餐',this)">
+                      <div class="td-emoji">🥗</div>
+                      <div class="td-info">
+                        <div class="td-name">凉拌苦瓜</div>
+                        <div class="td-tag">清热 · 泻火</div>
+                      </div>
+                      <div class="td-add">+</div>
+                    </div>
+                    <div class="timeline-dish" onclick="toggleDish('清蒸鲈鱼','🐟','午餐',this)">
+                      <div class="td-emoji">🐟</div>
+                      <div class="td-info">
+                        <div class="td-name">清蒸鲈鱼</div>
+                        <div class="td-tag">优质蛋白 · 易消化</div>
+                      </div>
+                      <div class="td-add">+</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-time">15:00</div>
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="timeline-title">🍵 午后茶</div>
+                  <div class="timeline-dishes">
+                    <div class="timeline-dish" onclick="toggleDish('菊花决明子茶','🌼','午后茶',this)">
+                      <div class="td-emoji">🌼</div>
+                      <div class="td-info">
+                        <div class="td-name">菊花决明子茶</div>
+                        <div class="td-tag">清肝 · 明目</div>
+                      </div>
+                      <div class="td-add">+</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="timeline-time">18:00 - 19:30</div>
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="timeline-title">🌙 晚餐</div>
+                  <div class="timeline-dishes">
+                    <div class="timeline-dish" onclick="toggleDish('糙米饭','🍚','晚餐',this)">
+                      <div class="td-emoji">🍚</div>
+                      <div class="td-info">
+                        <div class="td-name">糙米饭</div>
+                        <div class="td-tag">饱腹 · 稳定血糖</div>
+                      </div>
+                      <div class="td-add">+</div>
+                    </div>
+                    <div class="timeline-dish" onclick="toggleDish('蒜蓉西兰花','🥒','晚餐',this)">
+                      <div class="td-emoji">🥒</div>
+                      <div class="td-info">
+                        <div class="td-name">蒜蓉西兰花</div>
+                        <div class="td-tag">抗氧化 · 排毒</div>
+                      </div>
+                      <div class="td-add">+</div>
+                    </div>
+                    <div class="timeline-dish" onclick="toggleDish('冬瓜荷叶汤','🍵','汤品',this)">
+                      <div class="td-emoji">🍵</div>
+                      <div class="td-info">
+                        <div class="td-name">冬瓜荷叶汤</div>
+                        <div class="td-tag">利水 · 消肿 · 减脂</div>
+                      </div>
+                      <div class="td-add">+</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:16px;">
+              <button class="q-next" onclick="saveAndCloseTodayPlan()">
+                保存今日食谱 ✓
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 状态管理 ==========
+    const state = {
+      currentPage: 'home',
+      assessStep: 0,
+      assessAnswers: [],
+      // 今日已选食谱
+      todayPlan: {
+        '早餐': [],
+        '午餐': [],
+        '汤品': [],
+        '晚餐': [],
+        '午后茶': []
+      },
+      // 体质信息
+      constitution: '湿热质'
+    };
+
+    // ========== 菜品添加/移除 ==========
+    function addDish(btn, name, emoji, mealType) {
+      const isAdded = btn.classList.contains('added');
+      if (isAdded) {
+        // 移除
+        state.todayPlan[mealType] = state.todayPlan[mealType].filter(d => d.name !== name);
+        btn.classList.remove('added');
+        btn.textContent = '+';
+        btn.style.background = 'var(--primary)';
+      } else {
+        // 添加
+        state.todayPlan[mealType].push({ name, emoji });
+        btn.classList.add('added');
+        btn.textContent = '';
+        btn.style.background = 'var(--secondary)';
+        // 轻抖动反馈
+        btn.style.transform = 'scale(1.3)';
+        setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
+      }
+      updateDishCount();
+      updatePlanPreview();
+    }
+
+    function removeDish(name, mealType) {
+      const idx = state.todayPlan[mealType].findIndex(d => d.name === name);
+      if (idx > -1) state.todayPlan[mealType].splice(idx, 1);
+      // 找到对应的按钮还原
+      const btns = document.querySelectorAll('.dish-add-btn');
+      btns.forEach(btn => {
+        const parts = btn.onclick.toString().match(/'([^']+)'/g);
+        if (parts && parts[0] === "'" + name + "'") {
+          btn.classList.remove('added');
+          btn.textContent = '+';
+          btn.style.background = '';
+        }
+      });
+      renderSavedPlan();
+      updateDishCount();
+      updatePlanPreview();
+    }
+
+    function updateDishCount() {
+      // 更新底部显示已选数量
+      const total = Object.values(state.todayPlan).reduce((sum, arr) => sum + arr.length, 0);
+      const countEl = document.getElementById('selected-count');
+      if (countEl) countEl.textContent = total > 0 ? `已选 ${total} 道菜` : '';
+    }
+
+    // ========== 保存方案 ==========
+    function savePlan() {
+      const total = Object.values(state.todayPlan).reduce((sum, arr) => sum + arr.length, 0);
+      if (total === 0) {
+        alert('请先选择至少一道菜！');
+        return;
+      }
+      renderSavedPlan();
+      openModal('saved-plan-modal');
+    }
+
+    function renderSavedPlan() {
+      const container = document.getElementById('saved-dishes-list');
+      if (!container) return;
+
+      const mealInfo = {
+        '早餐': { icon: '🌅', time: '7:00 - 9:00' },
+        '午餐': { icon: '☀️', time: '11:30 - 13:00' },
+        '汤品': { icon: '🥣', time: '饭前小碗' },
+        '晚餐': { icon: '🌙', time: '18:00 - 19:30' },
+        '午后茶': { icon: '🍵', time: '15:00' }
+      };
+
+      let html = '';
+      Object.keys(state.todayPlan).forEach(mealType => {
+        const dishes = state.todayPlan[mealType];
+        if (dishes.length === 0) return;
+        const info = mealInfo[mealType];
+        html += `
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="font-size:16px;">${info.icon}</span>
+              <span style="font-weight:600;font-size:13px;">${mealType}</span>
+              <span style="font-size:10px;color:var(--text-light);">${info.time}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              ${dishes.map(d => `
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border-radius:10px;">
+                  <span style="font-size:20px;">${d.emoji}</span>
+                  <span style="flex:1;font-size:13px;">${d.name}</span>
+                  <div style="display:flex;gap:4px;">
+                    <button onclick="removeDish('${d.name}','${mealType}')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:16px;padding:2px 4px;">✕</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      if (!html) {
+        html = '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px;">还没有选择任何菜品</div>';
+      }
+      container.innerHTML = html;
+    }
+
+    function confirmPlan() {
+      const total = Object.values(state.todayPlan).reduce((sum, arr) => sum + arr.length, 0);
+      closeModal('saved-plan-modal');
+      alert(`✅ 今日食谱方案已确认！\n\n已选择 ${total} 道菜\n日期：2026年6月25日\n\n食养方向：清热祛湿 · 健脾和胃\n\n祝你今日饮食愉快 🌿`);
+    }
+
+    function startReassess() {
+      closeModal('condition-modal');
+      state.assessStep = 0;
+      state.assessAnswers = [];
+      renderQuestion();
+      gotoPage('assess');
+    }
+
+    const questions = [
+      {
+        num: '01',
+        text: '昨晚睡得怎么样？',
+        options: [
+          { emo: '😴', text: '一觉到天亮，很好' },
+          { emo: '🙂', text: '基本不错，偶有起夜' },
+          { emo: '😪', text: '入睡慢，多梦易醒' },
+          { emo: '😵', text: '严重失眠，几乎没睡' }
+        ]
+      },
+      {
+        num: '02',
+        text: '现在感觉累吗？',
+        options: [
+          { emo: '💪', text: '精力充沛' },
+          { emo: '🙂', text: '有一点点累' },
+          { emo: '😮‍💨', text: '比较疲劳，想休息' },
+          { emo: '😵', text: '非常疲惫' }
+        ]
+      },
+      {
+        num: '03',
+        text: '今天消化如何？',
+        options: [
+          { emo: '😊', text: '胃口好，无不适' },
+          { emo: '🙂', text: '正常，偶有胀气' },
+          { emo: '😣', text: '食欲差，腹胀' },
+          { emo: '🤢', text: '明显不适，反酸' }
+        ]
+      },
+      {
+        num: '04',
+        text: '最近睡眠、情绪、皮肤有什么变化？',
+        options: [
+          { emo: '☺️', text: '状态稳定' },
+          { emo: '😴', text: '入睡困难 / 早醒' },
+          { emo: '😤', text: '易烦躁 / 压力大' },
+          { emo: '😟', text: '皮肤出油 / 长痘' }
+        ]
+      }
+    ];
+
+    // ========== 页面切换 ==========
+    function gotoPage(name) {
+      if (state.currentPage === name) return;
+      // 如果从评估流程切走，重置评估
+      if (state.currentPage === 'assess' || state.currentPage === 'loading') {
+        // 不重置，保持状态
+      }
+
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelector(`.page[data-page="${name}"]`).classList.add('active');
+      state.currentPage = name;
+
+      // Tab 高亮
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      const tab = document.querySelector(`.tab[data-tab="${name}"]`);
+      if (tab) tab.classList.add('active');
+    }
+
+    // ========== 评估流程 ==========
+    function startAssessment() {
+      state.assessStep = 0;
+      state.assessAnswers = [];
+      renderQuestion();
+      gotoPage('assess');
+    }
+
+    function renderQuestion() {
+      const q = questions[state.assessStep];
+      const total = questions.length;
+      const isFirst = state.assessStep === 0;
+      const isLast = state.assessStep === total - 1;
+      const selected = state.assessAnswers[state.assessStep];
+
+      document.getElementById('assess-step').textContent = `问题 ${state.assessStep + 1} / ${total}`;
+
+      // 进度条
+      const bars = document.querySelectorAll('#q-progress .bar');
+      bars.forEach((bar, i) => {
+        bar.classList.remove('active', 'done');
+        if (i < state.assessStep) bar.classList.add('done');
+        else if (i === state.assessStep) bar.classList.add('active');
+      });
+
+      // 按钮区
+      let btnHtml = '';
+      if (!isFirst) {
+        btnHtml += `<button class="q-prev" onclick="prevQuestion()">上一题</button>`;
+      }
+      if (isLast) {
+        btnHtml += `<button class="q-next" ${selected === undefined ? 'disabled' : ''} onclick="startEvaluation()">开始评估</button>`;
+      } else {
+        btnHtml += `<button class="q-next" ${selected === undefined ? 'disabled' : ''} onclick="nextQuestion()">下一题</button>`;
+      }
+
+      const html = `
+        <div class="q-num">QUESTION ${q.num}</div>
+        <div class="q-text">${q.text}</div>
+        <div class="q-options">
+          ${q.options.map((opt, i) => `
+            <div class="q-option ${selected === i ? 'selected' : ''}" onclick="selectOption(${i})">
+              <div class="emo">${opt.emo}</div>
+              <span>${opt.text}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="q-btn-row">
+          ${btnHtml}
+        </div>
+      `;
+      document.getElementById('q-card').innerHTML = html;
+    }
+
+    function selectOption(idx) {
+      state.assessAnswers[state.assessStep] = idx;
+      renderQuestion();
+    }
+
+    function prevQuestion() {
+      if (state.assessStep > 0) {
+        state.assessStep--;
+        renderQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (state.assessStep < questions.length - 1) {
+        state.assessStep++;
+        renderQuestion();
+      }
+    }
+
+    function startEvaluation() {
+      if (state.assessAnswers[state.assessStep] === undefined) return;
+      gotoPage('loading');
+      setTimeout(() => {
+        gotoPage('recommend');
+      }, 2200);
+    }
+
+    // ========== 弹层 ==========
+    function openModal(id) {
+      document.getElementById(id).classList.add('show');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+    // 点击蒙层关闭
+    document.querySelectorAll('.modal').forEach(m => {
+      m.addEventListener('click', (e) => {
+        if (e.target === m) m.classList.remove('show');
+      });
+    });
+
+    function openRecipe(name) {
+      const recipes = {
+        // ===== 清热祛湿类 =====
+        '薏米红豆粥': {
+          eff: '清热利湿 · 健脾和胃',
+          category: '祛湿',
+          emoji: '🍲',
+          ingredients: ['薏米 50g', '红豆 50g', '冰糖 适量', '清水 800ml'],
+          steps: ['薏米、红豆提前浸泡 2 小时', '加入清水，大火煮沸', '转小火慢炖 40 分钟', '加入冰糖调味即可']
+        },
+        '冬瓜荷叶汤': {
+          eff: '利水消肿 · 清热解暑',
+          category: '祛湿',
+          emoji: '🍵',
+          ingredients: ['冬瓜 500g', '干荷叶 1 张', '姜 2 片', '盐 适量'],
+          steps: ['冬瓜去皮去瓤切块', '荷叶洗净剪小块', '冬瓜、荷叶、姜片加水', '大火煮沸转小火 30 分钟', '加盐调味即可']
+        },
+        '赤小豆鲤鱼汤': {
+          eff: '利水消肿 · 健脾祛湿',
+          category: '祛湿',
+          emoji: '🐟',
+          ingredients: ['鲤鱼 1 条', '赤小豆 50g', '姜 3 片', '盐 适量'],
+          steps: ['鲤鱼煎至两面金黄', '赤小豆浸泡 1 小时', '所有食材加水炖 1 小时', '出锅前加盐调味']
+        },
+        '玉米须茶': {
+          eff: '利水渗湿 · 清热降糖',
+          category: '祛湿',
+          emoji: '🌽',
+          ingredients: ['玉米须 30g', '清水 500ml', '冰糖 少许'],
+          steps: ['玉米须洗净', '加水煮沸后小火 10 分钟', '滤渣饮用，可加冰糖']
+        },
+        '茯苓糕': {
+          eff: '健脾祛湿 · 安神宁心',
+          category: '祛湿',
+          emoji: '🍰',
+          ingredients: ['茯苓粉 50g', '糯米粉 100g', '粳米粉 100g', '白糖 40g'],
+          steps: ['茯苓粉、糯米粉、粳米粉混合', '加入白糖和温水揉成面团', '放入模具蒸 30 分钟', '冷却后切块食用']
+        },
+        '凉拌马齿苋': {
+          eff: '清热解毒 · 祛湿止痢',
+          category: '清热',
+          emoji: '🥬',
+          ingredients: ['马齿苋 200g', '蒜末 适量', '生抽 1 勺', '香醋 1 勺', '香油 少许'],
+          steps: ['马齿苋洗净切段', '沸水焯烫 1 分钟捞出', '加入调料拌匀即可']
+        },
+        '凉拌苦瓜': {
+          eff: '清热解毒 · 泻火明目',
+          category: '清热',
+          emoji: '🥗',
+          ingredients: ['苦瓜 1 根', '蒜末 适量', '生抽 1 勺', '香醋 1 勺', '香油 少许'],
+          steps: ['苦瓜洗净去瓤，切薄片', '沸水焯烫 1 分钟捞出沥干', '过冷水保持脆嫩', '加入调料拌匀即可']
+        },
+        '绿豆百合汤': {
+          eff: '清热解毒 · 润肺安神',
+          category: '清热',
+          emoji: '🫘',
+          ingredients: ['绿豆 50g', '百合 20g', '冰糖 适量'],
+          steps: ['绿豆提前浸泡 2 小时', '绿豆、百合加水煮沸', '转小火煮 30 分钟', '加入冰糖调味']
+        },
+        '莲子心茶': {
+          eff: '清心火 · 安神助眠',
+          category: '清热',
+          emoji: '🌿',
+          ingredients: ['莲子心 3g', '蜂蜜 适量', '开水 300ml'],
+          steps: ['莲子心放入杯中', '加入沸水冲泡', '温凉后加蜂蜜饮用']
+        },
+        '菊花茶': {
+          eff: '疏风清热 · 清肝明目',
+          category: '清热',
+          emoji: '🌼',
+          ingredients: ['干菊花 10 朵', '枸杞 10 粒', '开水 300ml'],
+          steps: ['菊花、枸杞放入杯中', '沸水冲泡 5 分钟', '代茶饮用']
+        },
+        // ===== 健脾养胃类 =====
+        '山药排骨汤': {
+          eff: '健脾益气 · 滋补养胃',
+          category: '健脾',
+          emoji: '🍖',
+          ingredients: ['排骨 500g', '铁棍山药 1 根', '姜片 3 片', '盐 适量'],
+          steps: ['排骨冷水下锅焯水去血沫', '山药去皮切段', '排骨、姜片加水炖 40 分钟', '加入山药继续炖 20 分钟', '出锅前加盐调味']
+        },
+        '小米南瓜粥': {
+          eff: '养胃健脾 · 补虚益气',
+          category: '健脾',
+          emoji: '🥣',
+          ingredients: ['小米 50g', '南瓜 100g', '冰糖 适量', '清水 600ml'],
+          steps: ['小米洗净浸泡 30 分钟', '南瓜去皮切小块', '一起煮至粥稠', '加入冰糖调味']
+        },
+        '猴头菇炖鸡': {
+          eff: '养胃补虚 · 提高免疫',
+          category: '健脾',
+          emoji: '🍗',
+          ingredients: ['干猴头菇 20g', '土鸡 半只', '枸杞 10g', '姜 3 片'],
+          steps: ['猴头菇提前泡发撕小块', '鸡肉焯水去血沫', '所有食材入炖盅', '加水炖 2 小时，加盐调味']
+        },
+        '莲子芡实粥': {
+          eff: '健脾止泻 · 固肾涩精',
+          category: '健脾',
+          emoji: '🥣',
+          ingredients: ['莲子 30g', '芡实 30g', '粳米 80g', '冰糖 适量'],
+          steps: ['莲子、芡实提前浸泡', '所有食材加水煮粥', '煮至软糯后加冰糖']
+        },
+        '陈皮普洱茶': {
+          eff: '理气健脾 · 消食化积',
+          category: '健脾',
+          emoji: '🍵',
+          ingredients: ['陈皮 5g', '普洱茶 5g', '开水 300ml'],
+          steps: ['陈皮切丝', '与普洱茶一起冲泡', '焖 3 分钟后饮用']
+        },
+        '八珍糕': {
+          eff: '健脾养胃 · 益气补中',
+          category: '健脾',
+          emoji: '🍰',
+          ingredients: ['茯苓 30g', '莲子 30g', '薏米 30g', '芡实 30g', '党参 10g', '糯米粉 200g', '白糖 50g'],
+          steps: ['所有材料磨粉混合', '加糯米粉、白糖、温水揉匀', '入模具压成形', '上锅蒸 30 分钟']
+        },
+        '砂仁鲫鱼汤': {
+          eff: '健脾和胃 · 行气化湿',
+          category: '健脾',
+          emoji: '🐟',
+          ingredients: ['鲫鱼 1 条', '砂仁 5g', '陈皮 5g', '姜 3 片', '盐 适量'],
+          steps: ['鲫鱼煎至两面金黄', '砂仁、陈皮装入纱布袋', '与鲫鱼、姜片同炖 40 分钟', '出锅前加盐']
+        },
+        // ===== 补血养颜类 =====
+        '当归红枣鸡汤': {
+          eff: '补血养颜 · 调经止痛',
+          category: '养血',
+          emoji: '🍗',
+          ingredients: ['土鸡 半只', '当归 10g', '红枣 8 颗', '枸杞 适量', '姜片 3 片'],
+          steps: ['鸡肉冷水下锅焯水', '所有食材放入炖盅', '加满清水，大火煮沸', '转小火炖 2 小时', '出锅前加盐调味']
+        },
+        '红糖姜枣茶': {
+          eff: '温经养血 · 暖宫驱寒',
+          category: '养血',
+          emoji: '🍵',
+          ingredients: ['红糖 20g', '红枣 5 颗', '姜 3 片', '清水 300ml'],
+          steps: ['红枣去核，姜切片', '加水煮沸 10 分钟', '加入红糖搅匀']
+        },
+        '桂圆红枣茶': {
+          eff: '补益心脾 · 养血安神',
+          category: '养血',
+          emoji: '🍵',
+          ingredients: ['桂圆 10 颗', '红枣 5 颗', '枸杞 10g', '清水 400ml'],
+          steps: ['桂圆、红枣、枸杞洗净', '加水煮沸后小火 10 分钟', '代茶饮用']
+        },
+        '黑豆红枣汤': {
+          eff: '补肾养血 · 乌发明目',
+          category: '养血',
+          emoji: '🫘',
+          ingredients: ['黑豆 50g', '红枣 8 颗', '黑芝麻 10g', '红糖 适量'],
+          steps: ['黑豆提前浸泡 4 小时', '与红枣、黑芝麻同煮', '煮至豆烂加红糖']
+        },
+        '红枣银耳羹': {
+          eff: '补血养颜 · 润肺滋阴',
+          category: '养血',
+          emoji: '🍮',
+          ingredients: ['银耳 1 朵', '红枣 6 颗', '枸杞 10g', '冰糖 适量'],
+          steps: ['银耳泡发撕小朵', '红枣去核', '加水炖 1 小时至出胶', '加入枸杞、冰糖']
+        },
+        // ===== 润肺止咳类 =====
+        '川贝雪梨汤': {
+          eff: '润肺止咳 · 清热化痰',
+          category: '润肺',
+          emoji: '🍐',
+          ingredients: ['雪梨 1 个', '川贝 5g', '冰糖 适量', '清水 500ml'],
+          steps: ['雪梨去核切块', '川贝研粉', '所有食材加水炖 30 分钟']
+        },
+        '百合杏仁粥': {
+          eff: '润肺止咳 · 健脾益气',
+          category: '润肺',
+          emoji: '🥣',
+          ingredients: ['百合 20g', '甜杏仁 15g', '粳米 80g', '冰糖 适量'],
+          steps: ['百合、杏仁提前浸泡', '与粳米同煮成粥', '加入冰糖调味']
+        },
+        '蜂蜜萝卜汁': {
+          eff: '润肺止咳 · 消食化痰',
+          category: '润肺',
+          emoji: '🍹',
+          ingredients: ['白萝卜 200g', '蜂蜜 2 勺', '温开水 100ml'],
+          steps: ['萝卜榨汁', '加蜂蜜、温开水调匀', '分两次饮用']
+        },
+        '银耳百合羹': {
+          eff: '润肺养阴 · 清心安神',
+          category: '润肺',
+          emoji: '🍮',
+          ingredients: ['银耳 1 朵', '百合 30g', '莲子 20g', '冰糖 适量'],
+          steps: ['银耳泡发撕小朵', '莲子去芯', '加水炖 1 小时至出胶', '加入冰糖']
+        },
+        '麦冬玉竹汤': {
+          eff: '养阴润肺 · 生津止渴',
+          category: '润肺',
+          emoji: '🍵',
+          ingredients: ['麦冬 15g', '玉竹 15g', '瘦肉 200g', '姜 2 片', '盐 适量'],
+          steps: ['麦冬、玉竹洗净浸泡', '瘦肉切片焯水', '所有食材炖 1 小时', '加盐调味']
+        },
+        // ===== 温中散寒类 =====
+        '生姜红糖茶': {
+          eff: '温中驱寒 · 暖宫止痛',
+          category: '温阳',
+          emoji: '🍵',
+          ingredients: ['生姜 3 片', '红糖 20g', '清水 300ml'],
+          steps: ['生姜切片', '加水煮沸 5 分钟', '加入红糖搅匀即可饮用']
+        },
+        '当归生姜羊肉汤': {
+          eff: '温中补血 · 散寒止痛',
+          category: '温阳',
+          emoji: '🍖',
+          ingredients: ['羊肉 300g', '当归 15g', '生姜 5 片', '盐 适量'],
+          steps: ['羊肉冷水下锅焯水', '当归、生姜洗净', '所有食材同炖 1.5 小时', '加盐调味']
+        },
+        '肉桂红茶': {
+          eff: '温肾散寒 · 活血通络',
+          category: '温阳',
+          emoji: '🍵',
+          ingredients: ['肉桂 3g', '红茶 5g', '红糖 10g', '开水 300ml'],
+          steps: ['肉桂、红茶放入杯中', '沸水冲泡', '加入红糖饮用']
+        },
+        '胡椒猪肚汤': {
+          eff: '温中散寒 · 健脾养胃',
+          category: '温阳',
+          emoji: '🍖',
+          ingredients: ['猪肚 1 个', '白胡椒 10g', '姜 5 片', '盐 适量'],
+          steps: ['猪肚用盐反复搓洗', '白胡椒研碎装入猪肚', '与姜片同炖 1.5 小时', '切块加盐调味']
+        },
+        // ===== 滋阴补肾类 =====
+        '枸杞菊花茶': {
+          eff: '滋阴补肾 · 清肝明目',
+          category: '滋阴',
+          emoji: '🍵',
+          ingredients: ['枸杞 15 粒', '菊花 3 朵', '蜂蜜 适量'],
+          steps: ['枸杞、菊花放入杯中', '沸水冲泡', '温凉后加蜂蜜调味']
+        },
+        '黑芝麻糊': {
+          eff: '滋阴补肾 · 乌发养颜',
+          category: '滋阴',
+          emoji: '🍮',
+          ingredients: ['黑芝麻 100g', '糯米 50g', '冰糖 30g', '清水 600ml'],
+          steps: ['黑芝麻炒香磨碎', '糯米浸泡后磨浆', '加水煮沸后加芝麻粉', '煮至浓稠加冰糖']
+        },
+        '石斛麦冬茶': {
+          eff: '滋阴清热 · 生津益胃',
+          category: '滋阴',
+          emoji: '🍵',
+          ingredients: ['石斛 10g', '麦冬 10g', '生地 10g', '清水 600ml'],
+          steps: ['所有食材洗净', '加水煮沸后小火 15 分钟', '代茶饮用']
+        },
+        '桑葚膏': {
+          eff: '滋阴补血 · 乌发明目',
+          category: '滋阴',
+          emoji: '🫐',
+          ingredients: ['桑葚 500g', '蜂蜜 200g', '冰糖 100g'],
+          steps: ['桑葚洗净榨汁', '小火熬煮至浓稠', '加入蜂蜜、冰糖收膏', '冷却后装瓶冷藏']
+        },
+        // ===== 安神助眠类 =====
+        '酸枣仁茶': {
+          eff: '养心安神 · 助眠定惊',
+          category: '安神',
+          emoji: '🍵',
+          ingredients: ['酸枣仁 15g', '茯苓 10g', '知母 5g', '甘草 3g', '清水 500ml'],
+          steps: ['所有食材洗净', '加水煮沸后小火 20 分钟', '睡前 1 小时饮用']
+        },
+        '桂圆莲子汤': {
+          eff: '补脾止泻 · 养心安神',
+          category: '安神',
+          emoji: '🍵',
+          ingredients: ['桂圆 15 颗', '莲子 30g', '冰糖 适量'],
+          steps: ['莲子去芯', '与桂圆同煮 40 分钟', '加入冰糖']
+        },
+        '百合红枣粥': {
+          eff: '润肺止咳 · 安神助眠',
+          category: '安神',
+          emoji: '🥣',
+          ingredients: ['百合 20g', '红枣 5 颗', '粳米 80g', '冰糖 适量'],
+          steps: ['百合、红枣、粳米同煮', '煮至粥稠', '加入冰糖调味']
+        },
+        // ===== 消食化积类 =====
+        '山楂麦芽茶': {
+          eff: '消食化积 · 健脾开胃',
+          category: '消食',
+          emoji: '🍵',
+          ingredients: ['山楂 15g', '麦芽 15g', '清水 400ml'],
+          steps: ['山楂、麦芽洗净', '加水煮沸后小火 15 分钟', '饭后饮用']
+        },
+        '陈皮山楂饮': {
+          eff: '理气消食 · 化痰降脂',
+          category: '消食',
+          emoji: '🍹',
+          ingredients: ['陈皮 5g', '山楂 15g', '红糖 10g', '清水 400ml'],
+          steps: ['陈皮、山楂加水煮沸', '小火煮 15 分钟', '加红糖调味']
+        },
+        // ===== 明目护眼类 =====
+        '决明子菊花茶': {
+          eff: '清肝明目 · 降压降脂',
+          category: '明目',
+          emoji: '🍵',
+          ingredients: ['决明子 10g', '菊花 5 朵', '枸杞 适量'],
+          steps: ['所有材料放入杯中', '加入沸水冲泡', '焖 5 分钟即可饮用']
+        },
+        '桑叶猪肝汤': {
+          eff: '清肝明目 · 疏风清热',
+          category: '明目',
+          emoji: '🍖',
+          ingredients: ['猪肝 200g', '桑叶 15g', '姜 2 片', '盐 适量'],
+          steps: ['猪肝切片焯水去腥', '桑叶洗净', '同煮 30 分钟', '加盐调味']
+        },
+        // ===== 益气养阴类 =====
+        '西洋参麦冬茶': {
+          eff: '益气养阴 · 生津润燥',
+          category: '补气',
+          emoji: '🍵',
+          ingredients: ['西洋参 5g', '麦冬 10g', '五味子 5g', '清水 400ml'],
+          steps: ['所有食材洗净', '加水煮沸后小火 15 分钟', '代茶饮用']
+        },
+        '黄芪枸杞茶': {
+          eff: '补气固表 · 滋阴明目',
+          category: '补气',
+          emoji: '🍵',
+          ingredients: ['黄芪 10g', '枸杞 15 粒', '红枣 3 颗', '清水 400ml'],
+          steps: ['黄芪、枸杞、红枣洗净', '加水煮沸后小火 10 分钟', '代茶饮用']
+        },
+        '党参红枣粥': {
+          eff: '补中益气 · 健脾养血',
+          category: '补气',
+          emoji: '🥣',
+          ingredients: ['党参 15g', '红枣 5 颗', '粳米 80g', '冰糖 适量'],
+          steps: ['党参煎汁', '党参汁与红枣、粳米同煮', '煮至粥稠加冰糖']
+        },
+        // ===== 健脾祛湿类 =====
+        '莲藕排骨汤': {
+          eff: '养阴润燥 · 健脾开胃',
+          category: '健脾',
+          emoji: '🍖',
+          ingredients: ['莲藕 2 节', '排骨 400g', '姜 2 片', '盐 适量'],
+          steps: ['排骨焯水去血沫', '莲藕去皮切滚刀块', '所有食材加水炖 1 小时', '出锅前加盐调味']
+        },
+        '芡实茯苓粥': {
+          eff: '健脾祛湿 · 固肾涩精',
+          category: '祛湿',
+          emoji: '🥣',
+          ingredients: ['芡实 30g', '茯苓 20g', '粳米 80g', '盐 适量'],
+          steps: ['芡实、茯苓提前浸泡', '与粳米同煮成粥', '可加少许盐调味']
+        },
+        // ===== 润肠通便类 =====
+        '火麻仁粥': {
+          eff: '润肠通便 · 滋阴补虚',
+          category: '润肠',
+          emoji: '🥣',
+          ingredients: ['火麻仁 15g', '粳米 80g', '冰糖 适量'],
+          steps: ['火麻仁研碎', '与粳米同煮成粥', '加入冰糖调味']
+        },
+        '香蕉蜂蜜水': {
+          eff: '润肠通便 · 清热解毒',
+          category: '润肠',
+          emoji: '🍌',
+          ingredients: ['香蕉 1 根', '蜂蜜 1 勺', '温开水 200ml'],
+          steps: ['香蕉捣泥', '加蜂蜜、温开水调匀', '早晨空腹饮用']
+        }
+      };
+
+      const r = recipes[name] || recipes['薏米红豆粥'];
+      document.getElementById('recipe-modal-emoji').textContent = r.emoji;
+      document.getElementById('recipe-modal-name').textContent = name;
+      document.getElementById('recipe-modal-eff').textContent = r.eff;
+      document.getElementById('recipe-modal-cat').textContent = r.category;
+      document.getElementById('recipe-modal-ingredients').innerHTML =
+        r.ingredients.map(i => `<div style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--bg);border-radius:10px;font-size:13px;"><span>${i.split(' ')[0]}</span><span style="color:var(--text-light);">${i.split(' ').slice(1).join(' ')}</span></div>`).join('');
+      document.getElementById('recipe-modal-steps').innerHTML =
+        r.steps.map((s, i) => `<div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">${i + 1}</div><div style="font-size:13px;line-height:1.6;flex:1;padding-top:2px;">${s}</div></div>`).join('');
+
+      openModal('recipe-modal');
+    }
+
+    let currentAdviceTab = 'all';
+    let editingAdviceId = null;
+
+    function openAdvice() {
+      currentAdviceTab = 'all';
+      renderAdvice();
+      openModal('advice-modal');
+    }
+
+    function switchAdviceTab(tab, el) {
+      currentAdviceTab = tab;
+      const segs = document.querySelectorAll('#advice-modal .segment-bar .seg');
+      segs.forEach(s => s.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderAdvice();
+    }
+    function openReport() {
+      openModal('report-modal');
+    }
+    function openBodyData() {
+      openModal('body-modal');
+    }
+    function addAdvice() {
+      const input = document.getElementById('advice-input');
+      const catSel = document.getElementById('advice-cat-select');
+      const durSel = document.getElementById('advice-dur-select');
+      const text = input.value.trim();
+      if (!text) {
+        input.style.borderColor = '#e74c3c';
+        setTimeout(() => input.style.borderColor = '', 1000);
+        return;
+      }
+      const cat = catSel.value;
+      const dur = durSel.value;
+      doAddAdvice(text, cat, dur);
+      input.value = '';
+    }
+
+    function quickAdvice(text, cat, dur) {
+      doAddAdvice(text, cat, dur);
+    }
+
+    function doAddAdvice(text, category, duration) {
+      const today = new Date();
+      let expireDate = null;
+      if (duration !== '长期') {
+        const daysMap = { '3个月': 90, '1个月': 30, '2周': 14, '1周': 7, '3天': 3 };
+        const days = daysMap[duration] || 30;
+        expireDate = new Date(today.getTime() + days * 24 * 3600 * 1000).toISOString().slice(0, 10);
+      }
+      const item = {
+        id: Date.now(),
+        text,
+        category,
+        duration,
+        date: today.toISOString().slice(0, 10),
+        expireDate,
+        active: true
+      };
+      const list = getAdviceList();
+      list.unshift(item);
+      saveAdviceList(list);
+      renderAdvice();
+      updateAdviceCountBar();
+    }
+
+    function editAdvice(id) {
+      const list = getAdviceList();
+      const item = list.find(x => x.id === id);
+      if (!item) return;
+      editingAdviceId = id;
+      document.getElementById('edit-advice-text').value = item.text;
+      document.getElementById('edit-advice-dur').value = item.duration;
+      selectEditCat(item.category);
+      openModal('advice-edit-modal');
+    }
+
+    function selectEditCat(cat) {
+      const btns = document.querySelectorAll('.advice-cat-btn');
+      btns.forEach(btn => {
+        if (btn.dataset.cat === cat) {
+          btn.style.borderColor = 'var(--primary)';
+          btn.style.background = 'rgba(139,105,20,0.06)';
+          btn.style.color = 'var(--primary)';
+          btn.style.fontWeight = '600';
+        } else {
+          btn.style.borderColor = 'var(--border)';
+          btn.style.background = 'var(--bg-card)';
+          btn.style.color = 'var(--text)';
+          btn.style.fontWeight = 'normal';
+        }
+      });
+    }
+
+    function saveEditAdvice() {
+      const text = document.getElementById('edit-advice-text').value.trim();
+      if (!text) {
+        alert('请输入医嘱内容');
+        return;
+      }
+      const dur = document.getElementById('edit-advice-dur').value;
+      let category = '忌口类';
+      const btns = document.querySelectorAll('.advice-cat-btn');
+      btns.forEach(btn => {
+        if (btn.style.color === 'var(--primary)' || btn.style.color.includes('rgb(139, 105, 20)')) {
+          category = btn.dataset.cat;
+        }
+      });
+      
+      const list = getAdviceList();
+      const idx = list.findIndex(x => x.id === editingAdviceId);
+      if (idx > -1) {
+        const today = new Date();
+        let expireDate = null;
+        if (dur !== '长期') {
+          const daysMap = { '3个月': 90, '1个月': 30, '2周': 14, '1周': 7, '3天': 3 };
+          const days = daysMap[dur] || 30;
+          expireDate = new Date(today.getTime() + days * 24 * 3600 * 1000).toISOString().slice(0, 10);
+        }
+        list[idx].text = text;
+        list[idx].category = category;
+        list[idx].duration = dur;
+        list[idx].expireDate = expireDate;
+        saveAdviceList(list);
+        renderAdvice();
+        updateAdviceCountBar();
+      }
+      closeModal('advice-edit-modal');
+    }
+
+    function deleteAdvice(id) {
+      if (!confirm('确定要删除这条医嘱吗？')) return;
+      let list = getAdviceList();
+      list = list.filter(x => x.id !== id);
+      saveAdviceList(list);
+      renderAdvice();
+      updateAdviceCountBar();
+    }
+
+    function getDaysLeft(expireDate) {
+      if (!expireDate) return null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const expire = new Date(expireDate);
+      expire.setHours(0, 0, 0, 0);
+      const diff = Math.ceil((expire - today) / (24 * 3600 * 1000));
+      return diff;
+    }
+
+    function updateAdviceCountBar() {
+      const list = getAdviceList();
+      const today = new Date().toISOString().slice(0, 10);
+      const active = list.filter(x => x.active && (!x.expireDate || x.expireDate >= today));
+      const barEl = document.getElementById('advice-count-bar');
+      if (barEl) barEl.textContent = `${active.length} 条医嘱`;
+    }
+
+    // ========== 体检报告解读 ==========
+    const indicatorDetails = {
+      '尿酸': {
+        unit: 'μmol/L',
+        ref: '150-420',
+        value: 468,
+        level: 'high',
+        deviation: '偏高 11.4%',
+        meaning: '尿酸是嘌呤代谢的终产物，长期偏高可能导致痛风、肾结石等问题。',
+        causes: ['高嘌呤饮食（动物内脏、海鲜、啤酒）', '体内代谢异常', '肾功能下降', '肥胖、饮酒'],
+        diet_do: ['多喝水，每日 2000ml 以上', '多吃蔬菜水果', '适量摄入低嘌呤蛋白（鸡蛋、牛奶）', '多吃利尿食物（冬瓜、薏米、赤小豆）'],
+        diet_dont: ['避免动物内脏（肝、肾、脑）', '避免海鲜（虾、蟹、贝类）', '严格戒酒，尤其是啤酒', '减少红肉摄入', '避免高果糖饮料'],
+        recipes: ['薏米红豆粥', '冬瓜荷叶汤', '玉米须茶']
+      },
+      '甘油三酯': {
+        unit: 'mmol/L',
+        ref: '0.4-1.7',
+        value: 2.31,
+        level: 'high',
+        deviation: '偏高 35.9%',
+        meaning: '甘油三酯是血脂的一种，长期偏高会增加动脉粥样硬化、冠心病风险。',
+        causes: ['高糖高脂饮食', '饮酒过量', '肥胖、缺乏运动', '糖尿病、甲状腺功能减退'],
+        diet_do: ['多吃富含膳食纤维的食物（燕麦、粗粮）', '多吃深海鱼（补充 Omega-3）', '多吃新鲜蔬菜水果', '适量摄入坚果（核桃、杏仁）'],
+        diet_dont: ['减少精制糖和甜食', '限制饱和脂肪（肥肉、黄油）', '避免油炸食品', '限制饮酒，尤其是白酒和啤酒', '减少精制碳水化合物'],
+        recipes: ['山楂麦芽茶', '冬瓜荷叶汤', '凉拌苦瓜']
+      },
+      '总胆固醇': {
+        unit: 'mmol/L',
+        ref: '3.1-5.7',
+        value: 5.82,
+        level: 'mild',
+        deviation: '轻度偏高',
+        meaning: '总胆固醇是血液中各种胆固醇的总和，轻度偏高需要注意饮食调节。',
+        causes: ['高胆固醇饮食', '肥胖', '缺乏运动', '年龄增长、遗传因素'],
+        diet_do: ['增加膳食纤维摄入（燕麦、豆类）', '多吃富含植物甾醇的食物', '适量摄入优质脂肪（橄榄油、坚果）', '多吃蔬菜水果'],
+        diet_dont: ['减少动物内脏摄入', '限制蛋黄摄入（每周不超过3个）', '减少肥肉和黄油', '避免油炸和加工食品'],
+        recipes: ['山楂麦芽茶', '黑木耳炒芹菜', '燕麦粥']
+      },
+      '血糖（空腹）': {
+        unit: 'mmol/L',
+        ref: '3.9-6.1',
+        value: 6.2,
+        level: 'mild',
+        deviation: '边缘偏高',
+        meaning: '空腹血糖处于边缘水平，属于糖尿病前期，需要及时干预。',
+        causes: ['高糖饮食', '肥胖', '胰岛素抵抗', '缺乏运动'],
+        diet_do: ['选择低GI食物（粗粮、杂粮）', '增加膳食纤维摄入', '少食多餐，避免暴饮暴食', '适量摄入优质蛋白'],
+        diet_dont: ['避免精制糖和甜食', '减少白米饭、白面包等精制碳水', '避免含糖饮料', '控制主食摄入量'],
+        recipes: ['山药排骨汤', '小米南瓜粥', '凉拌苦瓜']
+      },
+      '血红蛋白': {
+        unit: 'g/L',
+        ref: '115-150',
+        value: 112,
+        level: 'mild',
+        deviation: '轻度偏低',
+        meaning: '血红蛋白轻度偏低，提示轻度贫血，需要注意补铁和营养。',
+        causes: ['缺铁性贫血最常见', '月经过多', '营养不良', '吸收不良'],
+        diet_do: ['多吃富含铁的食物（红肉、动物肝脏）', '多吃富含维生素C的食物促进铁吸收', '适量摄入补血食物（红枣、桂圆、红糖）', '补充优质蛋白质'],
+        diet_dont: ['避免饭前饭后大量饮茶（影响铁吸收）', '减少植酸含量高的食物（未加工的粗粮）', '避免与钙同时服用铁剂'],
+        recipes: ['当归红枣鸡汤', '红糖姜枣茶', '红枣银耳羹']
+      },
+      '谷丙转氨酶': {
+        unit: 'U/L',
+        ref: '7-40',
+        value: 48,
+        level: 'mild',
+        deviation: '轻度偏高',
+        meaning: '谷丙转氨酶轻度升高，可能提示肝细胞有轻微损伤，需要关注肝脏健康。',
+        causes: ['脂肪肝最常见', '饮酒', '药物影响', '熬夜、过度劳累'],
+        diet_do: ['清淡饮食，多吃蔬菜水果', '适量摄入优质蛋白（鱼、蛋、奶）', '多吃护肝食物（枸杞、菊花、决明子）', '增加膳食纤维摄入'],
+        diet_dont: ['严格戒酒', '避免高脂、高糖饮食', '减少油炸和加工食品', '避免自行服用不明药物'],
+        recipes: ['枸杞菊花茶', '决明子菊花茶', '菊花决明子茶']
+      }
+    };
+
+    let currentReportData = null;
+
+    function getReportHistory() {
+      try {
+        return JSON.parse(localStorage.getItem('zhiwei_reports') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveReportHistory(list) {
+      localStorage.setItem('zhiwei_reports', JSON.stringify(list));
+    }
+
+    function simulateUploadReport(type) {
+      const loadingText = document.getElementById('report-loading-text');
+      if (type === 'camera') {
+        loadingText.textContent = '正在拍照识别...';
+      } else if (type === 'album') {
+        loadingText.textContent = '正在读取图片...';
+      } else if (type === 'sample') {
+        loadingText.textContent = '加载示例报告...';
+      } else if (type === 'manual') {
+        alert('手动录入功能开发中，请使用拍照或相册上传');
+        return;
+      }
+
+      document.getElementById('report-upload-section').style.display = 'none';
+      document.getElementById('report-loading').style.display = 'block';
+      document.getElementById('report-result').style.display = 'none';
+
+      setTimeout(() => {
+        document.getElementById('report-loading').style.display = 'none';
+        document.getElementById('report-result').style.display = 'block';
+        
+        const today = new Date().toISOString().slice(0, 10);
+        currentReportData = {
+          id: Date.now(),
+          title: type === 'sample' ? '示例体检报告' : '2026 年度体检报告',
+          date: today,
+          total: 36,
+          normal: 28,
+          mild: 6,
+          serious: 2,
+          indicators: Object.keys(indicatorDetails)
+        };
+
+        renderAbnormalList();
+        renderReportHistory();
+
+        const history = getReportHistory();
+        if (!history.some(r => r.date === today)) {
+          history.unshift(currentReportData);
+          if (history.length > 10) history.pop();
+          saveReportHistory(history);
+        }
+      }, 2200);
+    }
+
+    function renderAbnormalList() {
+      const listEl = document.getElementById('report-abnormal-list');
+      if (!listEl) return;
+
+      const indicators = Object.entries(indicatorDetails);
+      listEl.innerHTML = indicators.map(([name, data]) => {
+        const icon = data.level === 'high' ? '🔴' : '🟡';
+        const iconClass = data.level === 'high' ? 'red' : 'gold';
+        const arrow = data.value > parseFloat(data.ref.split('-')[1]) ? '↑' : '↓';
+        const color = data.level === 'high' ? '#e74c3c' : '#f39c12';
+        return `
+          <div class="menu-item" style="align-items:flex-start;padding-top:12px;padding-bottom:12px;cursor:pointer;" onclick="showIndicatorDetail('${name}')">
+            <div class="menu-icon ${iconClass}">${icon}</div>
+            <div class="menu-text" style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div class="menu-title">${name}</div>
+                <span style="font-size:12px;font-weight:600;color:${color};">${arrow} ${data.value} ${data.unit}</span>
+              </div>
+              <div class="menu-desc">参考范围：${data.ref} ${data.unit} · ${data.deviation}</div>
+            </div>
+            <div class="menu-arrow">›</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showIndicatorDetail(name) {
+      const data = indicatorDetails[name];
+      if (!data) return;
+
+      document.getElementById('indicator-name').textContent = name;
+      
+      const arrow = data.value > parseFloat(data.ref.split('-')[1]) ? '↑' : '↓';
+      const color = data.level === 'high' ? '#e74c3c' : '#f39c12';
+      const levelText = data.level === 'high' ? '需关注' : '轻度异常';
+
+      const content = `
+        <div style="background:linear-gradient(135deg,#fff8e1,#fff3e0);border-radius:14px;padding:16px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div>
+              <div style="font-size:24px;font-weight:600;color:${color};font-family:'Noto Serif SC',serif;">${data.value} <span style="font-size:14px;font-weight:normal;">${data.unit}</span></div>
+              <div style="font-size:11px;color:var(--text-light);margin-top:2px;">参考范围：${data.ref} ${data.unit}</div>
+            </div>
+            <div style="font-size:11px;background:${data.level === 'high' ? '#ffebee' : '#fff3e0'};color:${color};padding:4px 10px;border-radius:10px;font-weight:500;">${levelText}</div>
+          </div>
+          <div style="font-size:12px;line-height:1.6;color:var(--text);">
+            ${data.meaning}
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text);">🔍 可能原因</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${data.causes.map(c => `
+              <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text);line-height:1.5;">
+                <span style="color:var(--primary);flex-shrink:0;">•</span>
+                <span>${c}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div style="background:#e8f5e9;border-radius:12px;padding:14px;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:600;color:#2e7d32;margin-bottom:8px;">✅ 饮食建议 · 宜吃</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${data.diet_do.map(d => `<span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#2e7d32;">${d}</span>`).join('')}
+          </div>
+        </div>
+
+        <div style="background:#ffebee;border-radius:12px;padding:14px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:600;color:#c62828;margin-bottom:8px;">❌ 饮食建议 · 忌吃</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${data.diet_dont.map(d => `<span style="background:#fff;padding:4px 10px;border-radius:12px;font-size:11px;color:#c62828;">${d}</span>`).join('')}
+          </div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text);">🍲 推荐食疗方</div>
+          <div class="menu-card">
+            ${data.recipes.map(r => `
+              <div class="menu-item" onclick="closeModal('indicator-detail-modal');openRecipe('${r}');">
+                <div class="menu-icon green">🍲</div>
+                <div class="menu-text" style="flex:1;">
+                  <div class="menu-title">${r}</div>
+                </div>
+                <div class="menu-arrow">›</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('indicator-detail-content').innerHTML = content;
+      openModal('indicator-detail-modal');
+    }
+
+    function reuploadReport() {
+      document.getElementById('report-result').style.display = 'none';
+      document.getElementById('report-upload-section').style.display = 'block';
+      currentReportData = null;
+    }
+
+    function loadReportHistory() {
+      const history = getReportHistory();
+      if (history.length === 0) {
+        alert('暂无历史报告');
+        return;
+      }
+      const latest = history[0];
+      currentReportData = latest;
+      document.getElementById('report-upload-section').style.display = 'none';
+      document.getElementById('report-result').style.display = 'block';
+      document.getElementById('report-title').textContent = latest.title;
+      document.getElementById('report-date').textContent = `上传于 ${latest.date} · 共检测 ${latest.total} 项`;
+      document.getElementById('report-normal').textContent = latest.normal;
+      document.getElementById('report-mild').textContent = latest.mild;
+      document.getElementById('report-serious').textContent = latest.serious;
+      renderAbnormalList();
+    }
+
+    function renderReportHistory() {
+      const listEl = document.getElementById('report-history');
+      if (!listEl) return;
+
+      const history = getReportHistory();
+      if (history.length === 0) {
+        listEl.innerHTML = `
+          <div class="menu-item">
+            <div class="menu-icon gold">📋</div>
+            <div class="menu-text">
+              <div class="menu-title">2026 年度体检报告</div>
+              <div class="menu-desc">2026-06-20 · 8 项异常</div>
+            </div>
+            <div class="menu-arrow">›</div>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon green">✅</div>
+            <div class="menu-text">
+              <div class="menu-title">2025 年度体检报告</div>
+              <div class="menu-desc">2025-08-15 · 3 项异常</div>
+            </div>
+            <div class="menu-arrow">›</div>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = history.slice(0, 5).map(r => {
+        const abnormalCount = r.mild + r.serious;
+        const icon = abnormalCount > 3 ? '📋' : '✅';
+        const iconClass = abnormalCount > 3 ? 'gold' : 'green';
+        return `
+          <div class="menu-item" onclick="loadReportById(${r.id})">
+            <div class="menu-icon ${iconClass}">${icon}</div>
+            <div class="menu-text">
+              <div class="menu-title">${r.title}</div>
+              <div class="menu-desc">${r.date} · ${abnormalCount} 项异常</div>
+            </div>
+            <div class="menu-arrow">›</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function loadReportById(id) {
+      const history = getReportHistory();
+      const report = history.find(r => r.id === id);
+      if (!report) return;
+      
+      currentReportData = report;
+      document.getElementById('report-upload-section').style.display = 'none';
+      document.getElementById('report-result').style.display = 'block';
+      document.getElementById('report-title').textContent = report.title;
+      document.getElementById('report-date').textContent = `上传于 ${report.date} · 共检测 ${report.total} 项`;
+      document.getElementById('report-normal').textContent = report.normal;
+      document.getElementById('report-mild').textContent = report.mild;
+      document.getElementById('report-serious').textContent = report.serious;
+      renderAbnormalList();
+    }
+
+    function toggleReportDetail() {
+      const el = document.getElementById('report-abnormal');
+      if (el.style.display === 'none' || el.style.display === '') {
+        el.style.display = 'block';
+        const rows = document.querySelectorAll('#report-result .section-title .more');
+        rows.forEach(r => {
+          if (r.textContent.includes('展开') || r.textContent.includes('收起')) {
+            r.textContent = '收起 ▴';
+          }
+        });
+      } else {
+        el.style.display = 'none';
+        const rows = document.querySelectorAll('#report-result .section-title .more');
+        rows.forEach(r => {
+          if (r.textContent.includes('展开') || r.textContent.includes('收起')) {
+            r.textContent = '展开 ▾';
+          }
+        });
+      }
+    }
+
+    function showReportDetail() {
+      const history = getReportHistory();
+      if (history.length > 0) {
+        loadReportById(history[0].id);
+      } else {
+        document.getElementById('report-upload-section').style.display = 'none';
+        document.getElementById('report-result').style.display = 'block';
+        renderAbnormalList();
+      }
+    }
+
+    function applyReportToRecommend() {
+      // 自动添加医嘱
+      const adviceList = getAdviceList();
+      const newAdvices = [
+        { text: '低嘌呤饮食', category: '限制类', duration: '长期' },
+        { text: '控制血脂', category: '限制类', duration: '长期' },
+        { text: '少盐少糖', category: '忌口类', duration: '长期' }
+      ];
+      let added = 0;
+      newAdvices.forEach(a => {
+        if (!adviceList.some(x => x.text === a.text)) {
+          doAddAdvice(a.text, a.category, a.duration);
+          added++;
+        }
+      });
+      closeModal('report-modal');
+      alert(`已将报告结果纳入推荐系统：\n✅ 新增 ${added} 条饮食禁忌\n✅ 更新了每日推荐优先级`);
+    }
+
+    function getAdviceList() {
+      try {
+        return JSON.parse(localStorage.getItem('zhiwei_advice') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveAdviceList(list) {
+      localStorage.setItem('zhiwei_advice', JSON.stringify(list));
+    }
+
+    function renderAdvice() {
+      const list = getAdviceList();
+      const today = new Date().toISOString().slice(0, 10);
+      let active = list.filter(x => x.active && (!x.expireDate || x.expireDate >= today));
+      const expired = list.filter(x => x.expireDate && x.expireDate < today);
+
+      if (currentAdviceTab !== 'all') {
+        active = active.filter(x => x.category === currentAdviceTab);
+      }
+
+      const countEl = document.getElementById('advice-count');
+      if (countEl) {
+        const allActive = list.filter(x => x.active && (!x.expireDate || x.expireDate >= today));
+        countEl.textContent = `${allActive.length} 条医嘱`;
+      }
+
+      const listEl = document.getElementById('advice-list');
+      if (!listEl) return;
+
+      if (active.length === 0) {
+        listEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-light);font-size:12px;">暂无有效医嘱<br>点击上方快速添加或手动输入</div>';
+      } else {
+        listEl.innerHTML = active.map(item => {
+          const catMap = { '忌口类': ['🚫', 'red'], '补充类': ['💪', 'green'], '限制类': ['⚠️', 'gold'], '调理类': ['🌿', 'green'] };
+          const [emo, cls] = catMap[item.category] || ['📋', 'gold'];
+          const daysLeft = getDaysLeft(item.expireDate);
+          let durText = '长期有效';
+          let daysBadge = '';
+          if (item.expireDate) {
+            durText = `有效期至 ${item.expireDate}`;
+            if (daysLeft !== null) {
+              if (daysLeft <= 3) {
+                daysBadge = `<span style="font-size:10px;background:#ffebee;color:#c62828;padding:2px 6px;border-radius:8px;margin-left:6px;">剩 ${daysLeft} 天</span>`;
+              } else if (daysLeft <= 7) {
+                daysBadge = `<span style="font-size:10px;background:#fff3e0;color:#e65100;padding:2px 6px;border-radius:8px;margin-left:6px;">剩 ${daysLeft} 天</span>`;
+              } else {
+                daysBadge = `<span style="font-size:10px;background:#e8f5e9;color:#2e7d32;padding:2px 6px;border-radius:8px;margin-left:6px;">剩 ${daysLeft} 天</span>`;
+              }
+            }
+          }
+          return `
+            <div class="menu-item">
+              <div class="menu-icon ${cls}">${emo}</div>
+              <div class="menu-text" style="flex:1;">
+                <div style="display:flex;align-items:center;">
+                  <div class="menu-title" style="flex:1;">${item.text}</div>
+                  ${daysBadge}
+                </div>
+                <div class="menu-desc">${item.category} · ${durText}</div>
+              </div>
+              <div style="display:flex;gap:2px;align-items:center;">
+                <div style="font-size:14px;color:var(--text-light);cursor:pointer;padding:6px 8px;border-radius:8px;" onclick="event.stopPropagation();editAdvice(${item.id})" onmouseover="this.style.background='var(--bg-cream)'" onmouseout="this.style.background=''">✏️</div>
+                <div style="font-size:18px;color:var(--text-light);cursor:pointer;padding:4px 8px;border-radius:8px;" onclick="event.stopPropagation();deleteAdvice(${item.id})" onmouseover="this.style.background='var(--bg-cream)'" onmouseout="this.style.background=''">×</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      const expiredEl = document.getElementById('advice-expired');
+      if (!expiredEl) return;
+      if (expired.length === 0) {
+        expiredEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-light);font-size:11px;">暂无已过期医嘱</div>';
+      } else {
+        expiredEl.innerHTML = expired.map(item => {
+          return `
+            <div class="menu-item">
+              <div class="menu-icon">📋</div>
+              <div class="menu-text">
+                <div class="menu-title">${item.text}</div>
+                <div class="menu-desc">已过期 · ${item.expireDate}</div>
+              </div>
+              <div style="font-size:18px;color:var(--text-light);cursor:pointer;padding:4px 8px;" onclick="event.stopPropagation();deleteAdvice(${item.id})">×</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // ========== 今日食谱二级菜单 ==========
+    function openTodayPlan() {
+      updateTimelineSelection();
+      openModal('today-plan-modal');
+    }
+
+    function toggleDish(name, emoji, mealType, el) {
+      const isSelected = el.classList.contains('selected');
+      if (isSelected) {
+        state.todayPlan[mealType] = state.todayPlan[mealType].filter(d => d.name !== name);
+        el.classList.remove('selected');
+      } else {
+        state.todayPlan[mealType].push({ name, emoji });
+        el.classList.add('selected');
+      }
+      updatePlanPreview();
+      updateDishCount();
+    }
+
+    function updateTimelineSelection() {
+      const timelineDishes = document.querySelectorAll('.timeline-dish');
+      timelineDishes.forEach(el => {
+        el.classList.remove('selected');
+      });
+      Object.keys(state.todayPlan).forEach(mealType => {
+        state.todayPlan[mealType].forEach(dish => {
+          const el = document.querySelector(`.timeline-dish[onclick*="'${dish.name}'"]`);
+          if (el) el.classList.add('selected');
+        });
+      });
+    }
+
+    function updatePlanPreview() {
+      const container = document.getElementById('plan-preview');
+      const countEl = document.getElementById('plan-count');
+      if (!container) return;
+
+      const allDishes = [];
+      const order = ['早餐', '午餐', '午后茶', '汤品', '晚餐'];
+      order.forEach(mealType => {
+        state.todayPlan[mealType].forEach(d => {
+          allDishes.push({ ...d, mealType });
+        });
+      });
+
+      if (allDishes.length === 0) {
+        container.innerHTML = '<div style="flex:1;text-align:center;padding:10px;color:var(--text-light);font-size:12px;">点击下方菜品添加</div>';
+      } else {
+        container.innerHTML = allDishes.map(d => `
+          <div class="plan-dish">
+            <div class="plan-dish-emoji">${d.emoji}</div>
+            <div class="plan-dish-name">${d.name}</div>
+          </div>
+        `).join('');
+      }
+
+      if (countEl) {
+        countEl.textContent = allDishes.length;
+      }
+    }
+
+    function saveAndCloseTodayPlan() {
+      const total = Object.values(state.todayPlan).reduce((sum, arr) => sum + arr.length, 0);
+      closeModal('today-plan-modal');
+      updatePlanPreview();
+      alert(`✅ 今日食谱已保存！\n\n已选择 ${total} 道菜\n\n祝你今日饮食愉快 🌿`);
+    }
+
+    // ========== 身体数据保存 ==========
+    let bodyRecords = JSON.parse(localStorage.getItem('zhiwei_body_records') || '[]');
+
+    function saveBodyData() {
+      const weight = document.getElementById('body-weight').value;
+      const bodyFat = document.getElementById('body-fat').value;
+      const bmi = document.getElementById('body-bmi').value;
+
+      if (!weight) {
+        alert('请输入体重');
+        return;
+      }
+
+      const record = {
+        id: Date.now(),
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toTimeString().slice(0, 5),
+        weight: parseFloat(weight),
+        bodyFat: bodyFat ? parseFloat(bodyFat) : null,
+        bmi: bmi ? parseFloat(bmi) : null,
+        bmiStatus: getBMIStatus(bmi ? parseFloat(bmi) : 0)
+      };
+
+      bodyRecords.unshift(record);
+      if (bodyRecords.length > 100) bodyRecords.pop();
+      localStorage.setItem('zhiwei_body_records', JSON.stringify(bodyRecords));
+
+      document.getElementById('body-weight').value = '';
+      document.getElementById('body-fat').value = '';
+      document.getElementById('body-bmi').value = '';
+
+      renderBodyHistory();
+      updateProfileBodyData(record);
+      closeModal('body-modal');
+      alert('✅ 身体数据已保存！');
+    }
+
+    function getBMIStatus(bmi) {
+      if (bmi < 18.5) return { text: '偏瘦', color: '#1890ff' };
+      if (bmi < 24) return { text: '正常', color: '#52c41a' };
+      if (bmi < 28) return { text: '偏胖', color: '#faad14' };
+      return { text: '肥胖', color: '#ff4d4f' };
+    }
+
+    function renderBodyHistory() {
+      const list = document.getElementById('body-history');
+      if (!list) return;
+
+      if (bodyRecords.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px;">暂无记录</div>';
+        return;
+      }
+
+      const recentRecords = bodyRecords.slice(0, 10);
+      list.innerHTML = recentRecords.map((r, i) => {
+        const prev = bodyRecords[i + 1];
+        const diff = prev ? (r.weight - prev.weight).toFixed(1) : null;
+        const diffClass = diff !== null ? (diff > 0 ? 'color:var(--accent)' : diff < 0 ? 'color:var(--secondary)' : '') : '';
+        return `
+          <div class="menu-item">
+            <div class="menu-icon green">⚖️</div>
+            <div class="menu-text">
+              <div class="menu-title">${r.weight} kg</div>
+              <div class="menu-desc">${r.date} ${r.time}</div>
+            </div>
+            <div class="menu-arrow" style="${diffClass};font-size:12px;">${diff !== null ? (diff > 0 ? '↑' : '↓') + Math.abs(diff) : ''}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateProfileBodyData(record) {
+      const weightEl = document.querySelector('.stat-value.weight');
+      const fatEl = document.querySelector('.stat-value.fat');
+      const bmiEl = document.querySelector('.stat-value.bmi');
+      const bmiStatusEl = document.querySelector('.bmi-status');
+
+      if (weightEl) weightEl.textContent = record.weight + ' kg';
+      if (record.bodyFat && fatEl) fatEl.textContent = record.bodyFat + '%';
+      if (record.bmi && bmiEl) bmiEl.textContent = record.bmi;
+      if (record.bmi && bmiStatusEl) {
+        bmiStatusEl.textContent = record.bmiStatus.text;
+        bmiStatusEl.style.color = record.bmiStatus.color;
+      }
+
+      updateBodyChart();
+    }
+
+    function updateBodyChart() {
+      const chart = document.getElementById('body-chart');
+      if (!chart || bodyRecords.length < 2) return;
+
+      const data = bodyRecords.slice(0, 7).reverse();
+      const max = Math.max(...data.map(r => r.weight)) + 1;
+      const min = Math.min(...data.map(r => r.weight)) - 1;
+      const range = max - min;
+
+      let html = '<div class="chart-bars">';
+      data.forEach(r => {
+        const height = ((r.weight - min) / range) * 100;
+        html += `<div class="chart-bar" style="height:${Math.max(height, 10)}%;background:${getBMIStatus(r.bmi || 0).color};"><div class="chart-value">${r.weight}</div></div>`;
+      });
+      html += '</div>';
+      html += `<div class="chart-labels">${data.map(r => r.date.slice(5)).join('')}</div>`;
+      chart.innerHTML = html;
+    }
+
+    function openConditionModal() {
+      openModal('condition-modal');
+    }
+
+    function switchMealTab(tab) {
+      document.querySelectorAll('.segment-bar .seg').forEach((s, i) => {
+        s.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      const blocks = document.querySelectorAll('.page[data-page="recommend"] .meal-block');
+      blocks.forEach(b => b.style.display = 'none');
+
+      if (tab === 'all') {
+        blocks.forEach(b => b.style.display = 'block');
+      } else if (tab === 'breakfast') {
+        blocks[0].style.display = 'block';
+      } else if (tab === 'lunch') {
+        blocks[1].style.display = 'block';
+      } else if (tab === 'soup') {
+        blocks[2].style.display = 'block';
+        blocks[4].style.display = 'block';
+      } else if (tab === 'dinner') {
+        blocks[3].style.display = 'block';
+      }
+    }
+
+    function generateNewPlan() {
+      alert('🔄 正在为你生成新的食养方案...');
+    }
+
+    function openShare() {
+      openModal('share-modal');
+    }
+
+    function addToShopping() {
+      renderShoppingList();
+      openModal('shopping-modal');
+    }
+
+    function renderShoppingList() {
+      const container = document.getElementById('shopping-list');
+      if (!container) return;
+
+      // 根据已选菜品映射食材
+      const dishIngredients = {
+        '小米南瓜粥': [{ name: '小米', qty: '50g' }, { name: '南瓜', qty: '100g' }],
+        '凉拌莴笋丝': [{ name: '莴笋', qty: '1 根' }],
+        '薏米红豆粥': [{ name: '薏米', qty: '50g' }, { name: '红豆', qty: '50g' }],
+        '凉拌苦瓜': [{ name: '苦瓜', qty: '1 根' }, { name: '蒜', qty: '3 瓣' }],
+        '清蒸鲈鱼': [{ name: '鲈鱼', qty: '1 条' }, { name: '姜', qty: '3 片' }],
+        '冬瓜荷叶汤': [{ name: '冬瓜', qty: '500g' }, { name: '干荷叶', qty: '1 张' }],
+        '糙米饭': [{ name: '糙米', qty: '100g' }],
+        '蒜蓉西兰花': [{ name: '西兰花', qty: '1 颗' }, { name: '蒜', qty: '3 瓣' }],
+        '菊花决明子茶': [{ name: '菊花', qty: '5 朵' }, { name: '决明子', qty: '10g' }]
+      };
+
+      const mealMap = { '早餐': '🌅', '午餐': '☀️', '汤品': '🥣', '晚餐': '🌙', '午后茶': '🍵' };
+
+      // 收集所有食材
+      const ingredientMap = {};
+      Object.keys(state.todayPlan).forEach(mealType => {
+        state.todayPlan[mealType].forEach(dish => {
+          const ings = dishIngredients[dish.name] || [];
+          ings.forEach(ing => {
+            if (ingredientMap[ing.name]) {
+              // 合并数量（简单处理）
+            } else {
+              ingredientMap[ing.name] = { ...ing, from: (ingredientMap[ing.name]?.from || []).concat([dish.name]) };
+              ingredientMap[ing.name].from = [...(ingredientMap[ing.name]?.from || []), dish.name];
+            }
+          });
+        });
+      });
+
+      // 去重
+      const uniqueIngredients = {};
+      Object.keys(state.todayPlan).forEach(mealType => {
+        state.todayPlan[mealType].forEach(dish => {
+          const ings = dishIngredients[dish.name] || [];
+          ings.forEach(ing => {
+            if (!uniqueIngredients[ing.name]) {
+              uniqueIngredients[ing.name] = { name: ing.name, qty: ing.qty, from: [] };
+            }
+            if (!uniqueIngredients[ing.name].from.includes(dish.name)) {
+              uniqueIngredients[ing.name].from.push(dish.name);
+            }
+          });
+        });
+      });
+
+      const ingredients = Object.values(uniqueIngredients);
+
+      if (ingredients.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-light);font-size:13px;">还没有选择任何菜品<br>请先在推荐页添加菜品</div>';
+        return;
+      }
+
+      container.innerHTML = ingredients.map(ing => `
+        <div class="menu-item">
+          <div class="menu-icon green">🥘</div>
+          <div class="menu-text">
+            <div class="menu-title">${ing.name}</div>
+            <div class="menu-desc">${ing.qty} · 用于：${ing.from.join('、')}</div>
+          </div>
+          <div class="menu-arrow" style="color:var(--text-mute);">○</div>
+        </div>
+      `).join('');
+    }
+
+    function copyShoppingList() {
+      const ings = document.querySelectorAll('#shopping-list .menu-title');
+      if (ings.length === 0) {
+        alert('购物清单为空，请先选择菜品');
+        return;
+      }
+      const list = Array.from(ings).map((el, i) => `${i + 1}. ${el.textContent}`).join('\n');
+      const text = `🛒 知味·今日购物清单\n日期：2026年6月25日\n\n${list}\n\n—— 来自知味小程序`;
+      navigator.clipboard?.writeText(text).then(() => {
+        alert('✅ 购物清单已复制到剪贴板！');
+      }).catch(() => {
+        alert('复制成功！\n\n' + text);
+      });
+    }
+
+    function askAI() {
+      openModal('ask-modal');
+    }
+
+    function askQuestion(q) {
+      alert('AI 食养师回答中...\n\n📝 问题：' + q + '\n\n（演示版本，更多功能开发中）');
+    }
+
+    // ========== 初始化 ==========
+    function init() {
+      seedAdviceIfEmpty();
+      renderBodyHistory();
+      updatePlanPreview();
+      updateDishCount();
+      renderRecipeGrid();
+      renderReportHistory();
+      updateAdviceCountBar();
+    }
+
+    function seedAdviceIfEmpty() {
+      const list = getAdviceList();
+      if (list.length === 0) {
+        const today = new Date();
+        const monthAgo = new Date(today.getTime() - 30 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+        const twoMonthsAgo = new Date(today.getTime() - 60 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+        const defaultList = [
+          { id: 1, text: '少吃辛辣', category: '忌口类', duration: '长期', date: monthAgo, expireDate: null, active: true },
+          { id: 2, text: '多补钙', category: '补充类', duration: '长期', date: monthAgo, expireDate: null, active: true },
+          { id: 3, text: '控制血糖', category: '限制类', duration: '长期', date: twoMonthsAgo, expireDate: null, active: true }
+        ];
+        saveAdviceList(defaultList);
+      }
+    }
+
+    // ========== 食谱库渲染 ==========
+    let currentFilter = '全部';
+    let currentSearch = '';
+
+    function getRecipeData() {
+      return {
+        '薏米红豆粥': { eff: '清热利湿 · 健脾和胃', category: '祛湿', emoji: '🍲', color: '#E8F5E9' },
+        '冬瓜荷叶汤': { eff: '利水消肿 · 清热解暑', category: '祛湿', emoji: '🍵', color: '#E8F5E9' },
+        '赤小豆鲤鱼汤': { eff: '利水消肿 · 健脾祛湿', category: '祛湿', emoji: '🐟', color: '#E8F5E9' },
+        '玉米须茶': { eff: '利水渗湿 · 清热降糖', category: '祛湿', emoji: '🌽', color: '#E8F5E9' },
+        '茯苓糕': { eff: '健脾祛湿 · 安神宁心', category: '祛湿', emoji: '🍰', color: '#E8F5E9' },
+        '凉拌马齿苋': { eff: '清热解毒 · 祛湿止痢', category: '清热', emoji: '🥬', color: '#FFF3E0' },
+        '凉拌苦瓜': { eff: '清热解毒 · 泻火明目', category: '清热', emoji: '🥗', color: '#FFF3E0' },
+        '绿豆百合汤': { eff: '清热解毒 · 润肺安神', category: '清热', emoji: '🫘', color: '#FFF3E0' },
+        '莲子心茶': { eff: '清心火 · 安神助眠', category: '清热', emoji: '🌿', color: '#FFF3E0' },
+        '菊花茶': { eff: '疏风清热 · 清肝明目', category: '清热', emoji: '🌼', color: '#FFF3E0' },
+        '山药排骨汤': { eff: '健脾益气 · 滋补养胃', category: '健脾', emoji: '🍖', color: '#FFF8E1' },
+        '小米南瓜粥': { eff: '养胃健脾 · 补虚益气', category: '健脾', emoji: '🥣', color: '#FFF8E1' },
+        '猴头菇炖鸡': { eff: '养胃补虚 · 提高免疫', category: '健脾', emoji: '🍗', color: '#FFF8E1' },
+        '莲子芡实粥': { eff: '健脾止泻 · 固肾涩精', category: '健脾', emoji: '🥣', color: '#FFF8E1' },
+        '陈皮普洱茶': { eff: '理气健脾 · 消食化积', category: '健脾', emoji: '🍵', color: '#FFF8E1' },
+        '八珍糕': { eff: '健脾养胃 · 益气补中', category: '健脾', emoji: '🍰', color: '#FFF8E1' },
+        '砂仁鲫鱼汤': { eff: '健脾和胃 · 行气化湿', category: '健脾', emoji: '🐟', color: '#FFF8E1' },
+        '莲藕排骨汤': { eff: '养阴润燥 · 健脾开胃', category: '健脾', emoji: '🍖', color: '#FFF8E1' },
+        '芡实茯苓粥': { eff: '健脾祛湿 · 固肾涩精', category: '祛湿', emoji: '🥣', color: '#E8F5E9' },
+        '当归红枣鸡汤': { eff: '补血养颜 · 调经止痛', category: '养血', emoji: '🍗', color: '#FCE4EC' },
+        '红糖姜枣茶': { eff: '温经养血 · 暖宫驱寒', category: '养血', emoji: '🍵', color: '#FCE4EC' },
+        '桂圆红枣茶': { eff: '补益心脾 · 养血安神', category: '养血', emoji: '🍵', color: '#FCE4EC' },
+        '黑豆红枣汤': { eff: '补肾养血 · 乌发明目', category: '养血', emoji: '🫘', color: '#FCE4EC' },
+        '红枣银耳羹': { eff: '补血养颜 · 润肺滋阴', category: '养血', emoji: '🍮', color: '#FCE4EC' },
+        '川贝雪梨汤': { eff: '润肺止咳 · 清热化痰', category: '润肺', emoji: '🍐', color: '#E3F2FD' },
+        '百合杏仁粥': { eff: '润肺止咳 · 健脾益气', category: '润肺', emoji: '🥣', color: '#E3F2FD' },
+        '蜂蜜萝卜汁': { eff: '润肺止咳 · 消食化痰', category: '润肺', emoji: '🍹', color: '#E3F2FD' },
+        '银耳百合羹': { eff: '润肺养阴 · 清心安神', category: '润肺', emoji: '🍮', color: '#E3F2FD' },
+        '麦冬玉竹汤': { eff: '养阴润肺 · 生津止渴', category: '润肺', emoji: '🍵', color: '#E3F2FD' },
+        '生姜红糖茶': { eff: '温中驱寒 · 暖宫止痛', category: '温阳', emoji: '🍵', color: '#FBE9E7' },
+        '当归生姜羊肉汤': { eff: '温中补血 · 散寒止痛', category: '温阳', emoji: '🍖', color: '#FBE9E7' },
+        '肉桂红茶': { eff: '温肾散寒 · 活血通络', category: '温阳', emoji: '🍵', color: '#FBE9E7' },
+        '胡椒猪肚汤': { eff: '温中散寒 · 健脾养胃', category: '温阳', emoji: '🍖', color: '#FBE9E7' },
+        '枸杞菊花茶': { eff: '滋阴补肾 · 清肝明目', category: '滋阴', emoji: '🍵', color: '#F3E5F5' },
+        '黑芝麻糊': { eff: '滋阴补肾 · 乌发养颜', category: '滋阴', emoji: '🍮', color: '#F3E5F5' },
+        '石斛麦冬茶': { eff: '滋阴清热 · 生津益胃', category: '滋阴', emoji: '🍵', color: '#F3E5F5' },
+        '桑葚膏': { eff: '滋阴补血 · 乌发明目', category: '滋阴', emoji: '🫐', color: '#F3E5F5' },
+        '酸枣仁茶': { eff: '养心安神 · 助眠定惊', category: '安神', emoji: '🍵', color: '#E8EAF6' },
+        '桂圆莲子汤': { eff: '补脾止泻 · 养心安神', category: '安神', emoji: '🍵', color: '#E8EAF6' },
+        '百合红枣粥': { eff: '润肺止咳 · 安神助眠', category: '安神', emoji: '🥣', color: '#E8EAF6' },
+        '山楂麦芽茶': { eff: '消食化积 · 健脾开胃', category: '消食', emoji: '🍵', color: '#FBE9E7' },
+        '陈皮山楂饮': { eff: '理气消食 · 化痰降脂', category: '消食', emoji: '🍹', color: '#FBE9E7' },
+        '决明子菊花茶': { eff: '清肝明目 · 降压降脂', category: '明目', emoji: '🍵', color: '#E8F5E9' },
+        '桑叶猪肝汤': { eff: '清肝明目 · 疏风清热', category: '明目', emoji: '🍖', color: '#E8F5E9' },
+        '西洋参麦冬茶': { eff: '益气养阴 · 生津润燥', category: '补气', emoji: '🍵', color: '#E3F2FD' },
+        '黄芪枸杞茶': { eff: '补气固表 · 滋阴明目', category: '补气', emoji: '🍵', color: '#E3F2FD' },
+        '党参红枣粥': { eff: '补中益气 · 健脾养血', category: '补气', emoji: '🥣', color: '#E3F2FD' },
+        '火麻仁粥': { eff: '润肠通便 · 滋阴补虚', category: '润肠', emoji: '🥣', color: '#F1F8E9' },
+        '香蕉蜂蜜水': { eff: '润肠通便 · 清热解毒', category: '润肠', emoji: '🍌', color: '#F1F8E9' }
+      };
+    }
+
+    const recipeColorMap = {};
+    function getRecipeColor(name) {
+      if (recipeColorMap[name]) return recipeColorMap[name];
+      const colors = ['#FFF8E1','#E8F5E9','#FFF3E0','#FCE4EC','#E3F2FD','#F3E5F5','#E8EAF6','#F1F8E9','#FBE9E7','#F0F4C3'];
+      recipeColorMap[name] = colors[Object.keys(getRecipeData()).indexOf(name) % colors.length];
+      return recipeColorMap[name];
+    }
+
+    function renderRecipeGrid() {
+      const grid = document.getElementById('recipe-grid');
+      const countEl = document.getElementById('recipe-count');
+      if (!grid) return;
+
+      const all = getRecipeData();
+      let names = Object.keys(all);
+
+      // 分类筛选
+      if (currentFilter !== '全部') {
+        names = names.filter(n => all[n].category === currentFilter);
+      }
+
+      // 搜索过滤
+      if (currentSearch) {
+        const q = currentSearch.toLowerCase();
+        names = names.filter(n => {
+          const r = all[n];
+          return n.includes(q) || r.category.includes(q) || r.eff.includes(q);
+        });
+      }
+
+      if (countEl) countEl.textContent = currentFilter === '全部' && !currentSearch
+        ? `为你推荐 · 共 ${names.length} 道`
+        : `共 ${names.length} 道`;
+
+      if (names.length === 0) {
+        grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-light);font-size:13px;">没有找到相关食谱<br>试试其他分类或关键词</div>';
+        return;
+      }
+
+      grid.innerHTML = names.map(name => {
+        const r = all[name];
+        const bg = getRecipeColor(name);
+        return `
+          <div class="recipe-card" onclick="openRecipe('${name}')">
+            <div class="recipe-cover" style="background:${bg};">
+              <span class="recipe-tag">${r.category}</span>
+              <span style="font-size:36px;">${r.emoji}</span>
+            </div>
+            <div class="recipe-info">
+              <div class="recipe-name">${name}</div>
+              <div class="recipe-eff">${r.eff}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setFilter(cat, el) {
+      currentFilter = cat;
+      currentSearch = '';
+      document.getElementById('recipe-search').value = '';
+      document.querySelectorAll('#filter-chips .chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      renderRecipeGrid();
+    }
+
+    function filterRecipes() {
+      currentSearch = document.getElementById('recipe-search').value.trim();
+      renderRecipeGrid();
+    }
+
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>
