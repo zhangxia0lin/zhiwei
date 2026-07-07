@@ -29,102 +29,24 @@
       font-family:'Noto Sans SC','PingFang SC',sans-serif;
       background:linear-gradient(135deg,#f8f3e9 0%,#f0e8d8 100%);
       color:var(--text);
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      margin:0;
+      padding:0;
       min-height:100vh;
-      padding:20px;
       overflow-x:hidden;
     }
 
-    /* —— 桌面侧栏 —— */
-    .stage{
-      display:flex;
-      align-items:center;
-      gap:48px;
-      flex-wrap:wrap;
-      justify-content:center;
-      max-width:1200px;
-    }
-    .brand{
-      max-width:380px;
-    }
-    .brand h1{
-      font-family:'Noto Serif SC',serif;
-      font-size:64px;
-      line-height:1.1;
-      background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
-      margin-bottom:16px;
-    }
-    .brand .tagline{
-      font-size:18px;
-      color:var(--text-light);
-      line-height:1.7;
-      margin-bottom:24px;
-    }
-    .brand .features-mini{
+    /* —— APP容器 —— */
+    .app-container{
+      width:100%;
+      height:100vh;
       display:flex;
       flex-direction:column;
-      gap:12px;
-    }
-    .features-mini .item{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      font-size:14px;
-      color:var(--text);
-    }
-    .features-mini .dot{
-      width:8px;height:8px;border-radius:50%;
-      background:var(--secondary);
-    }
-    .features-mini .dot.gold{background:var(--primary-light);}
-    .features-mini .dot.red{background:var(--accent);}
-
-    /* —— 手机外壳 —— */
-    .phone{
-      width:430px;
-      height:820px;
-      background:#0d0d0d;
-      border-radius:52px;
-      padding:14px;
-      box-shadow:
-        0 0 0 2px #1a1a1a,
-        0 30px 60px rgba(0,0,0,0.3),
-        inset 0 0 0 2px #2a2a2a;
-      position:relative;
-      flex-shrink:0;
-    }
-    .phone::before{
-      content:'';
-      position:absolute;
-      top:16px;left:50%;transform:translateX(-50%);
-      width:130px;height:30px;
-      background:#0d0d0d;
-      border-radius:20px;
-      z-index:20;
-    }
-    .phone::after{
-      content:'';
-      position:absolute;
-      bottom:6px;left:50%;transform:translateX(-50%);
-      width:140px;height:5px;
-      background:#fff;
-      opacity:0.3;
-      border-radius:3px;
-      z-index:20;
-    }
-    .screen{
-      width:100%;height:100%;
       background:var(--bg);
-      border-radius:36px;
       overflow:hidden;
+      max-width:430px;
+      margin:0 auto;
+      box-shadow:0 0 40px rgba(139,105,20,0.1);
       position:relative;
-      display:flex;
-      flex-direction:column;
     }
 
     /* —— 状态栏 —— */
@@ -138,6 +60,8 @@
       font-weight:600;
       color:var(--text);
       flex-shrink:0;
+      background:var(--bg);
+      z-index:10;
     }
     .status-bar .right{
       display:flex;
@@ -1269,28 +1193,10 @@
       display:flex;gap:6px;margin-top:8px;font-size:9px;color:var(--text-mute);
       text-align:center;
     }
-
-    @media (max-width: 880px){
-      .brand{display:none;}
-      .phone{width:100%;max-width:430px;height:calc(100vh - 40px);max-height:820px;}
-    }
   </style>
 </head>
 <body>
-  <div class="stage">
-    <div class="brand">
-      <h1>知味</h1>
-      <p class="tagline">基于中医食疗智慧 + AI 个性化推荐的<br>饮食管理小程序 Demo</p>
-      <div class="features-mini">
-        <div class="item"><span class="dot"></span>1 分钟体质评估，生成今日食养方案</div>
-        <div class="item"><span class="dot gold"></span>3000+ 道食疗食谱按体质/节气筛选</div>
-        <div class="item"><span class="dot red"></span>体检报告 AI 解读、医嘱智能解析</div>
-        <div class="item"><span class="dot"></span>数据记录 · 趋势跟踪 · 闭环管理</div>
-      </div>
-    </div>
-
-    <div class="phone">
-      <div class="screen">
+  <div class="app-container">
         <!-- 状态栏 -->
         <div class="status-bar">
           <span>9:41</span>
@@ -2549,9 +2455,7 @@
             </div>
           </div>
         </div>
-      </div>
     </div>
-  </div>
 
   <script>
     // ========== 状态管理 ==========
@@ -2827,8 +2731,287 @@
       if (state.assessAnswers[state.assessStep] === undefined) return;
       gotoPage('loading');
       setTimeout(() => {
+        generatePersonalRecommend();
         gotoPage('recommend');
       }, 2200);
+    }
+
+    function generatePersonalRecommend() {
+      const answers = state.assessAnswers;
+      const sleepScore = answers[0] || 0;
+      const energyScore = answers[1] || 0;
+      const digestScore = answers[2] || 0;
+      const moodScore = answers[3] || 0;
+
+      let statusType = 'normal';
+      let title = '';
+      let subtitle = '';
+      let tags = [];
+      let dangerTags = [];
+      let aiMsg = '';
+      let mealPlan = {};
+
+      if (sleepScore >= 2 && energyScore >= 2) {
+        statusType = 'fatigue';
+        title = '气虚乏力';
+        subtitle = '宜补气养血 · 安神助眠';
+        tags = ['补气', '养血', '安神'];
+        dangerTags = ['少熬夜', '忌劳累'];
+        aiMsg = '根据你的状态，今天明显感觉疲劳乏力。建议多吃补气养血的食物，注意休息，晚餐不要吃得太饱。';
+        mealPlan = {
+          '早餐': [
+            { name: '山药红枣粥', emoji: '🥣', tag: '补气养血' },
+            { name: '蒸鸡蛋羹', emoji: '🥚', tag: '优质蛋白' }
+          ],
+          '午餐': [
+            { name: '黄芪炖鸡汤', emoji: '🍗', tag: '补气升阳' },
+            { name: '炒菠菜', emoji: '🥬', tag: '养血润燥' },
+            { name: '小米饭', emoji: '🍚', tag: '健脾养胃' }
+          ],
+          '汤品': [
+            { name: '当归生姜羊肉汤', emoji: '🍲', tag: '温中补虚' }
+          ],
+          '晚餐': [
+            { name: '莲子百合粥', emoji: '🥣', tag: '养心安神' },
+            { name: '清蒸鱼', emoji: '🐟', tag: '健脾利水' }
+          ],
+          '午后茶': [
+            { name: '桂圆红枣茶', emoji: '🍵', tag: '补血安神' }
+          ]
+        };
+      } else if (digestScore >= 2) {
+        statusType = 'digest';
+        title = '脾胃虚弱';
+        subtitle = '宜健脾养胃 · 清淡饮食';
+        tags = ['健脾', '养胃', '消食'];
+        dangerTags = ['忌生冷', '忌油腻'];
+        aiMsg = '今天消化不太好，建议吃些清淡易消化的食物，减轻肠胃负担。';
+        mealPlan = {
+          '早餐': [
+            { name: '小米粥', emoji: '🥣', tag: '健脾养胃' },
+            { name: '蒸山药', emoji: '🍠', tag: '补脾养胃' }
+          ],
+          '午餐': [
+            { name: '软烂面条', emoji: '🍜', tag: '易消化' },
+            { name: '番茄炒蛋', emoji: '🍅', tag: '营养均衡' },
+            { name: '凉拌黄瓜', emoji: '🥒', tag: '清热利湿' }
+          ],
+          '汤品': [
+            { name: '萝卜排骨汤', emoji: '🥣', tag: '消食化痰' }
+          ],
+          '晚餐': [
+            { name: '南瓜粥', emoji: '🥣', tag: '补中益气' },
+            { name: '清炒冬瓜', emoji: '🥒', tag: '利水消肿' }
+          ],
+          '午后茶': [
+            { name: '陈皮茶', emoji: '🍵', tag: '理气健脾' }
+          ]
+        };
+      } else if (sleepScore >= 2 || moodScore >= 2) {
+        statusType = 'sleep';
+        title = '心神不宁';
+        subtitle = '宜养心安神 · 疏肝解郁';
+        tags = ['安神', '疏肝', '静心'];
+        dangerTags = ['忌辛辣', '少思虑'];
+        aiMsg = '今天睡眠或情绪不太稳定，建议吃些安神助眠的食物，保持心情舒畅。';
+        mealPlan = {
+          '早餐': [
+            { name: '百合莲子粥', emoji: '🥣', tag: '养心安神' },
+            { name: '全麦面包', emoji: '🍞', tag: '稳定情绪' }
+          ],
+          '午餐': [
+            { name: '甘麦大枣汤', emoji: '🍲', tag: '养心安神' },
+            { name: '芹菜炒香干', emoji: '🥬', tag: '平肝清热' },
+            { name: '燕麦饭', emoji: '🍚', tag: '营养均衡' }
+          ],
+          '汤品': [
+            { name: '酸枣仁汤', emoji: '🍵', tag: '安神助眠' }
+          ],
+          '晚餐': [
+            { name: '小米百合粥', emoji: '🥣', tag: '健脾安神' },
+            { name: '凉拌银耳', emoji: '🥗', tag: '滋阴润燥' }
+          ],
+          '午后茶': [
+            { name: '玫瑰花茶', emoji: '🌹', tag: '疏肝理气' }
+          ]
+        };
+      } else if (energyScore >= 2 && digestScore >= 1) {
+        statusType = 'damp';
+        title = '湿气较重';
+        subtitle = '宜健脾祛湿 · 利水消肿';
+        tags = ['祛湿', '健脾', '利水'];
+        dangerTags = ['忌生冷', '忌甜食'];
+        aiMsg = '感觉身体有些沉重，可能是湿气较重。建议吃些健脾祛湿的食物，适当运动。';
+        mealPlan = {
+          '早餐': [
+            { name: '薏米粥', emoji: '🥣', tag: '利水渗湿' },
+            { name: '凉拌海带丝', emoji: '🥗', tag: '软坚散结' }
+          ],
+          '午餐': [
+            { name: '赤小豆炒薏米', emoji: '🍲', tag: '利水消肿' },
+            { name: '炒冬瓜', emoji: '🥒', tag: '清热利水' },
+            { name: '糙米饭', emoji: '🍚', tag: '健脾养胃' }
+          ],
+          '汤品': [
+            { name: '冬瓜海带汤', emoji: '🍵', tag: '清热利湿' }
+          ],
+          '晚餐': [
+            { name: '茯苓山药粥', emoji: '🥣', tag: '健脾祛湿' },
+            { name: '清蒸鲫鱼', emoji: '🐟', tag: '健脾利水' }
+          ],
+          '午后茶': [
+            { name: '荷叶茶', emoji: '🍃', tag: '清热利湿' }
+          ]
+        };
+      } else if (sleepScore >= 1 && energyScore >= 1 && digestScore >= 1) {
+        statusType = 'mixed';
+        title = '状态波动';
+        subtitle = '宜综合调理 · 平衡阴阳';
+        tags = ['平衡', '调理', '养生'];
+        dangerTags = ['忌过度', '忌偏食'];
+        aiMsg = '今天身体状态有些波动，建议保持规律饮食，注意休息，综合调理。';
+        mealPlan = {
+          '早餐': [
+            { name: '杂粮粥', emoji: '🥣', tag: '营养均衡' },
+            { name: '水煮蛋', emoji: '🥚', tag: '优质蛋白' }
+          ],
+          '午餐': [
+            { name: '四神汤', emoji: '🍲', tag: '健脾祛湿' },
+            { name: '彩椒炒牛肉', emoji: '🥩', tag: '补气养血' },
+            { name: '白米饭', emoji: '🍚', tag: '补中益气' }
+          ],
+          '汤品': [
+            { name: '山药排骨汤', emoji: '🥣', tag: '健脾补肾' }
+          ],
+          '晚餐': [
+            { name: '蔬菜豆腐汤', emoji: '🥣', tag: '清淡养生' },
+            { name: '清蒸虾仁', emoji: '🦐', tag: '补肾益精' }
+          ],
+          '午后茶': [
+            { name: '枸杞菊花茶', emoji: '🌼', tag: '清肝明目' }
+          ]
+        };
+      } else {
+        statusType = 'normal';
+        title = '状态良好';
+        subtitle = '宜均衡饮食 · 维持状态';
+        tags = ['均衡', '养生', '保健'];
+        dangerTags = [];
+        aiMsg = '今天状态很不错！继续保持均衡饮食，适当运动，身体会越来越好。';
+        mealPlan = {
+          '早餐': [
+            { name: '燕麦牛奶', emoji: '🥛', tag: '营养丰富' },
+            { name: '水果沙拉', emoji: '🥗', tag: '维生素' }
+          ],
+          '午餐': [
+            { name: '红烧肉', emoji: '🍖', tag: '补气养血' },
+            { name: '蒜蓉西兰花', emoji: '🥦', tag: '抗氧化' },
+            { name: '玉米饭', emoji: '🌽', tag: '膳食纤维' }
+          ],
+          '汤品': [
+            { name: '番茄蛋汤', emoji: '🍅', tag: '营养均衡' }
+          ],
+          '晚餐': [
+            { name: '蔬菜粥', emoji: '🥣', tag: '清淡养胃' },
+            { name: '煎鸡胸肉', emoji: '🍗', tag: '优质蛋白' }
+          ],
+          '午后茶': [
+            { name: '绿茶', emoji: '🍵', tag: '提神醒脑' }
+          ]
+        };
+      }
+
+      state.currentStatus = {
+        type: statusType,
+        title: title,
+        subtitle: subtitle,
+        tags: tags,
+        dangerTags: dangerTags,
+        aiMsg: aiMsg,
+        mealPlan: mealPlan
+      };
+
+      updateRecommendPage();
+    }
+
+    function updateRecommendPage() {
+      const status = state.currentStatus;
+      if (!status) return;
+
+      const heroEl = document.querySelector('.result-hero');
+      if (!heroEl) return;
+
+      const heroTitle = heroEl.querySelector('h2');
+      const heroDesc = heroEl.querySelector('p');
+      const resultTags = heroEl.querySelector('.result-tags');
+      const aiMsgEl = document.querySelector('.chat-msg');
+
+      if (heroTitle) heroTitle.innerHTML = `${status.title}，<br>${status.subtitle}`;
+      if (heroDesc) heroDesc.textContent = `结合你今日的状态评估，${status.aiMsg}`;
+      if (aiMsgEl) aiMsgEl.textContent = status.aiMsg;
+
+      if (resultTags) {
+        let tagsHtml = status.tags.map(t => `<span class="result-tag">${t}</span>`).join('');
+        tagsHtml += status.dangerTags.map(t => `<span class="result-tag danger">${t}</span>`).join('');
+        resultTags.innerHTML = tagsHtml;
+      }
+
+      if (state.currentPage === 'recommend') {
+        renderMealPlan(status.mealPlan);
+      }
+    }
+
+    function renderMealPlan(plan) {
+      const mealTypes = {
+        '早餐': { icon: '🌅', time: '7:00 - 9:00 · 唤醒脾胃' },
+        '午餐': { icon: '☀️', time: '11:30 - 13:00 · 营养均衡' },
+        '汤品': { icon: '🥣', time: '饭前小碗 · 暖胃生津' },
+        '晚餐': { icon: '🌙', time: '18:00 - 19:30 · 清淡为主' },
+        '午后茶': { icon: '🍵', time: '15:00 · 醒神明目' }
+      };
+
+      const mealBlockContainer = document.querySelector('.recommend .meal-block').parentNode;
+      if (!mealBlockContainer) return;
+
+      let html = '';
+      Object.keys(mealTypes).forEach(type => {
+        const dishes = plan[type] || [];
+        const mt = mealTypes[type];
+        const isSnack = type === '午后茶';
+
+        html += `
+          <div class="meal-block ${isSnack ? 'snack-block' : ''}">
+            <div class="meal-head">
+              <div class="meal-icon ${isSnack ? 'soup' : type === '早餐' ? 'breakfast' : type === '午餐' ? 'lunch' : type === '晚餐' ? 'dinner' : 'soup'}">${mt.icon}</div>
+              <div>
+                <div class="meal-title">${type}</div>
+                <div class="meal-sub">${mt.time}</div>
+              </div>
+            </div>
+            <div class="meal-dishes">
+              ${dishes.map(d => `
+                <div class="dish-row">
+                  <div class="dish-emoji">${d.emoji}</div>
+                  <div>
+                    <div class="dish-name">${d.name}</div>
+                    <div class="dish-tag">${d.tag}</div>
+                  </div>
+                  <div class="dish-add-btn" onclick="addDish(this,'${d.name}','${d.emoji}','${type}')">+</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      const existingBlocks = mealBlockContainer.querySelectorAll('.meal-block');
+      existingBlocks.forEach((block, index) => {
+        if (index === 0) {
+          block.outerHTML = html;
+        } else {
+          block.remove();
+        }
+      });
     }
 
     // ========== 弹层 ==========
